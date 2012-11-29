@@ -1,0 +1,159 @@
+
+
+\section{Hs and Ht based population differentiation statistics}
+
+<<echo=false, results=hide>>=
+
+HsHt<-function (x, n) 
+{
+    harmN <- harmonic_mean(table(pop(x)))
+    pops <- pop(x)
+    a <- apply(x@tab, 2, function(row) tapply(row, pops, mean, 
+        na.rm = TRUE))
+    HpS <- sum(1 - apply(a^2, 1, sum, na.rm = TRUE))/n
+    Hs_est <- (2 * harmN/(2 * harmN - 1)) * HpS
+    HpT <- 1 - sum(apply(a, 2, mean, na.rm = TRUE)^2)
+    Ht_est <- HpT + Hs_est/(2 * harmN * n)
+    return(c(Ht_est, Hs_est))
+}
+
+Gst_Nei2<-function (x) 
+{
+    n <- length(unique(pop(x)))
+    Gst.per.locus <- function(g) {
+        hets <- HsHt(g, n)
+        Ht_est <- hets[1]
+        Hs_est <- hets[2]
+        G_est <- (Ht_est - Hs_est)/Ht_est
+        return(c(Hs_est, Ht_est, G_est))
+    }
+    loci <- t(sapply(seploc(x), Gst.per.locus))
+    global_Hs <- mean(loci[, 1], na.rm = T)
+    global_Ht <- mean(loci[, 2], na.rm = T)
+    global_G_est <- (global_Ht - global_Hs)/global_Ht
+    return(list(per.locus = loci[, 3], global = global_G_est))
+}
+
+pairwise_Gst_Nei2<-function (x, linearized = FALSE) 
+{
+    pops <- seppop(x)
+    n.pops <- length(pops)
+    allP <- utils::combn(1:n.pops, 2)
+    pair <- function(index.a, index.b) {
+        a <- pops[[index.a]]
+        b <- pops[[index.b]]
+        temp <- repool(a, b)
+        return(Gst_Nei2(temp)$global)
+    }
+    res <- sapply(1:dim(allP)[2], function(i) pair(allP[, i][1], 
+        allP[, i][2]))
+    attributes(res) <- attributes(dist(1:n.pops))
+    if (linearized) {
+        return(res/(1 - res))
+    }
+    return(res)
+}
+pairwise_D2 <- function (x, linearized = FALSE) 
+{
+    pops <- seppop(x)
+    n.pops <- length(pops)
+    allP <- utils::combn(1:n.pops, 2)
+    pair <- function(index.a, index.b) {
+        a <- pops[[index.a]]
+        b <- pops[[index.b]]
+        temp <- repool(a, b)
+        return(D_Jost(temp)$global.het)
+    }
+    res <- sapply(1:dim(allP)[2], function(i) pair(allP[, i][1], 
+        allP[, i][2]))
+    attributes(res) <- attributes(dist(1:n.pops))
+    if (linearized) {
+        return(res/(1 - res))
+    }
+    else (return(res))
+}
+
+
+
+@
+
+<<echo=false, results=hide>>=
+differentiate<-diff_stats(cats)
+difftitle1<-"Hs and Ht based estimates of differentiation: Gst, Gst and Dest for each locus"
+difftitle2<-"Hs and Ht based global estimates of differentiation: Gst, Gst and Dest for each locus"
+diffglobmat<-matrix(NA,nrow=1,ncol=length(differentiate$global))
+diffglobmat[1,]<-differentiate$global
+colnames(diffglobmat)<-names(differentiate$global)
+diffbylocus<-xtable(differentiate$per.locus, cap=difftitle1, digits=3)
+diffglobal<-xtable(diffglobmat, cap=difftitle2, digits=3)
+@
+
+<<echo=false,results=tex>>=
+print(diffbylocus,include.rownames=T, ,add.to.row=list(list(seq(1,nrow(differentiate$per.locus),2)),"\\rowcolor[gray]{0.9} "))
+@
+
+<<echo=false,results=tex>>=
+print(diffglobal,include.rownames=F, ,add.to.row=list(list(seq(1,nrow(diffglobmat),2)),"\\rowcolor[gray]{0.9} "))
+@
+
+<<echo=false,results=hide>>=
+if (length(levels(cats@pop))>2){
+  pairD<-pairwise_D2(cats)
+  pairDmat<-as.matrix(pairD)
+  pairDmat[upper.tri(pairDmat,diag=T)]<-NA
+  colnames(pairDmat)<-cats@pop.names
+  rownames(pairDmat)<-cats@pop.names
+ # pairDmat<-pairDmat[-1,]
+
+  pairGstH<-pairwise_Gst_Hedrick(cats)
+  pairGstHmat<-as.matrix(pairGstH)
+  pairGstHmat[upper.tri(pairGstHmat,diag=T)]<-NA
+  colnames(pairGstHmat)<-cats@pop.names
+  rownames(pairGstHmat)<-cats@pop.names
+ # pairGstHmat<-pairGstHmat[-1,]
+
+
+  pairGstN<-pairwise_Gst_Nei2(cats)
+  pairGstNmat<-as.matrix(pairGstN)
+  pairGstNmat[upper.tri(pairGstNmat,diag=T)]<-NA
+  colnames(pairGstNmat)<-cats@pop.names
+  rownames(pairGstNmat)<-cats@pop.names
+ # pairGstNmat<-pairGstNmat[-1,]
+
+  pairdiff1<-"mmod Jost's D pairwise"
+  pairdiff2<-"Pairwise Gst - Hedrick"
+  pairdiff3<-"Pairwise Gst - Nei"
+
+  pairDtab<-xtable(pairDmat, cap=pairdiff1, digits=3)
+  pairGstHtab<-xtable(pairGstHmat, cap=pairdiff2, digits=3)
+  pairGstNtab<-xtable(pairGstNmat, cap=pairdiff3, digits=3)
+}
+@
+
+
+<<echo=false,results=tex>>=
+if (length(levels(cats@pop))>2){
+
+if (dim(pairDmat)[1]<13)   print(pairDtab,include.rownames=T)  else
+  print(pairDtab,include.rownames=T, floating.environment='sidewaystable', scalebox=max(1-(dim(pairDmat)[1]-15)/50,0.2))
+
+if (dim(pairGstHmat)[1]<13)   print(pairGstHtab,include.rownames=T)  else
+  print(pairGstHtab,include.rownames=T, floating.environment='sidewaystable', scalebox=max(1-(dim(pairGstHmat)[1]-15)/50,0.2))
+
+if (dim(pairGstNmat)[1]<13)   print(pairGstNtab,include.rownames=T)  else
+  print(pairGstNtab,include.rownames=T, floating.environment='sidewaystable', scalebox=max(1-(dim(pairGstNmat)[1]-15)/50,0.2))
+  
+#  print(pairDtab,include.rownames=T)
+ # print(pairGstHtab,include.rownames=T)
+ # print(pairGstNtab,include.rownames=T)
+}
+@
+
+
+<<echo=false, results=hide>>=
+if (length(levels(cats@pop))>2){
+allresults$HsHtdifferentiate<-list(HsHtdifferent=differentiate,pairwiseD=pairDmat, pairwiseGSTH=pairGstH, pairwiseGstN=pairGstN)
+}
+@
+
+\FloatBarrier

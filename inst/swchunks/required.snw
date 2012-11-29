@@ -1,0 +1,19 @@
+<<echo=false,results=hide>>=
+library(RgoogleMaps)
+require(adegenet)
+require(ade4)
+require(pegas)
+require(genetics)
+require(gap)
+require(lattice)
+require(sp)
+require(calibrate)
+require(xtable)
+require(plyr)
+require(DEMEtics)
+require(gplots)
+require(mmod)
+require(dismo)
+
+options(width = 80)
+@

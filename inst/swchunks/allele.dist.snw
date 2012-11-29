@@ -1,0 +1,25 @@
+\section{Distribution of alleles by population and loci}
+Cell colors indicate the proportion of the the total number of alleles in a population (e.g. 2N) that are of a particular allele type. The number within a cell is the count of the number of alleles in a particular population.  
+
+
+\noindent
+
+<<echo=false>>=
+freq_alleles<-allele.dist(cats, mk.figures=FALSE)
+breaks<-seq(0,1,.05)
+color.palette  <- colorRampPalette(c("yellow", "red"))(length(breaks) - 1)
+numloci<-length(cats@loc.names)
+for (i in 1:numloci){
+  figlabel<-paste("Loci: ",cats@loc.names[i]," List # ",i,sep="")
+  figfilelabel<-paste("figures/",filename,"-allele",i,".png",sep="")
+  png(figfilelabel, res=300,width=1800,height=1350)
+  heatmap.2(freq_alleles[[2]][[i]], dendrogram="none", Rowv=NA, Colv=NA,col = color.palette,breaks=breaks, scale="none", trace="none", cellnote=freq_alleles[[1]][[i]], margins=c(5,10),main=figlabel, lmat=rbind( c(0, 3), c(2,1), c(0,4) ), lhei=c(1.5, 4, 2 ), notecol="black",tracecol="black",linecol="black")
+  dev.off()
+}
+@
+
+<<echo=false, results=hide>>=
+allresults$Alleledist<-list(frequencies=freq_alleles[[2]], count=freq_alleles[[1]])
+@
+
+\FloatBarrier

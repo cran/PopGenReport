@@ -1,0 +1,57 @@
+\section{Genetic distance between individuals using Smouse and Peakall}
+
+<<echo=false>>=
+# create a scratchpad version of individual coordinates
+tempcoords<-cats@other$mercat
+
+# get an initial count of individuals
+initmaxind<-(dim(tempcoords))[1]
+indpop<-cats@pop[1:initmaxind,drop=TRUE] # gets a list of the individual's populations
+
+# create empty lists which will contain the individuals and populations removed 
+indsrmv<-c()
+popsgone<-c()
+
+# first look for individuals who are the only ones in their pop
+# go through the list of populations
+for (i in 1:length(sumcats$pop.eff)){
+  # find out who only has 1 individual
+  if (sumcats$pop.eff[i]<2){
+    indrmv<-which(indpop==levels(cats@pop)[i])
+    indsrmv<-c(indsrmv, indrmv)
+    popsgone<-c(popsgone,i)
+  }
+}
+
+# remove individuals if the population only has one individual
+if(length(indsrmv)>0){
+  indsrmv<-indsrmv*(-1)
+  tempcoords<-tempcoords[indsrmv,]
+}
+
+
+# calculate genetic distance based on Smouse and Peakall
+genedist<-gd_smouse(cats,verbose=FALSE)
+
+# calculate genetic distance
+geodist<-dist(tempcoords)/1000
+
+# now create figure
+fname.smouse_dist<-paste("figures/",filename,"-smouse_dist.png",sep="")
+png(fname.smouse_dist,width=6,height=4, units="in", res=300)
+  plot(geodist,genedist,pch=20,xlab="Geographic Distance (km)",ylab="Genetic Dissimilarity", col=rgb(0.8,0.5,0.5,0.1))
+dev.off()
+@
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=6in,height=4in]{\Sexpr{fname.smouse_dist}}}
+  \caption{Genetic Dissimilarity (Smouse and Peakall) vs Geographic Distance}
+\end{figure}
+
+<<echo=false,results=hide>>=
+allresults$GDSmouse<-list(geneticdist=genedist,geogdist=geodist)
+@
+
+\FloatBarrier
+
+

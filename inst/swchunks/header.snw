@@ -1,0 +1,21 @@
+\documentclass[a4paper]{scrartcl}
+\usepackage{lscape}
+\usepackage[section]{placeins}
+\usepackage{rotating}
+\usepackage[margin=1.0in]{geometry}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\begin{document}
+
+\title{A Population Genetic Report}
+
+<<echo=false,results=hide>>=
+ip <- installed.packages()
+ver <- ip[which(ip[,1]=="PopGenReport"),"Version"]
+@
+\subtitle{using PopGenReport Ver. \Sexpr{ver}}
+\author{Adamack \& Gruber (2012)}
+\maketitle
+\tableofcontents
+\newpage
+

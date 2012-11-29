@@ -1,0 +1,96 @@
+\section{Data Overview}
+This analysis looks at \Sexpr{sumcats$N} individuals.
+
+<<echo=false,results=hide>>=
+
+brtab <- function(mat,capt,rown, width=9)
+{
+
+n.entry<- dim(t(mat))[2]
+tab <- t(mat)
+pta <- matrix(NA,ncol=min(width,n.entry), nrow=2*ceiling(n.entry/width))
+for (i in 1:n.entry)
+{
+pta[2*(floor((i-1)/width)+1),((i-1) %% width)+1] <- tab[i]
+pta[2*(floor((i-1)/width)+1)-1,((i-1) %% width)+1] <- colnames(tab)[i]
+}
+
+
+pta <- cbind(rep(rown,ceiling(n.entry/width)),pta)
+
+
+print(xtable(pta,  cap=capt), add.to.row=list(list(seq(1,2*ceiling(n.entry/width),2)),"\\rowcolor[gray]{0.9} "), include.rownames=FALSE, include.colnames=FALSE, hline.after=c(0,nrow(pta)))
+}
+
+fname.n_alleles_per_locus<-paste("figures/",filename,"-n_alleles_per_locus.png",sep="")
+png(fname.n_alleles_per_locus,res=300,width=1800,height=1200)
+barplot(sumcats$loc.nall,ylab="Number of alleles", main="Number of alleles per locus",xlab="Locus",ylim=c(0,round((5+max(sumcats$loc.nall)),digits=-1)),las=3,names.arg=cats@loc.names, cex.names=0.8)
+dev.off()
+
+fname.pop_sampsz_vs_alleles<-paste("figures/",filename,"-pop_sampsz_vs_alleles.png",sep="")
+png(fname.pop_sampsz_vs_alleles,res=300,width=1800,height=1200) 
+plot(sumcats$pop.eff,sumcats$pop.nall,xlab="Location sample size",ylab="Number of alleles",main="Number of alleles vs location sample size",pch=19,ylim=c(0,round((5+max(sumcats$pop.nall)),digits=-1)))
+textxy(sumcats$pop.eff,sumcats$pop.nall,(names(sumcats$pop.eff)),cx=0.6)
+dev.off()
+@
+
+
+
+\noindent 
+\newline The individuals were sampled from the following locations in the following numbers: 
+<<echo=false, results=hide>>=
+indlist<-as.data.frame(samplocnum)
+colnames(indlist)<-"Number"
+#t(indlist)
+popallelecnt<-sum(sumcats$loc.nall)
+@
+
+<<echo=false, results=tex>>=
+brtab(indlist, capt="Number of individuals per population", c("population","# ind"))
+@
+
+\noindent
+\newline The total number of alleles sampled across all subpopulations was \Sexpr{popallelecnt}; The total number of alleles seen in each subpopulation was:
+<<echo=false, results=hide>>=
+numallelespop<-as.data.frame(sumcats$pop.nall)
+rownames(numallelespop)<-cats@pop.names
+colnames(numallelespop)<-"Total number of alleles"
+#t(numallelespop)
+@
+<<echo=false, results=tex>>=
+brtab(numallelespop,"Number of alleles per population",c("population","# alleles"))
+@
+\begin{figure}[h]
+  \centerline{\includegraphics[width=6in,height=4in]{\Sexpr{fname.pop_sampsz_vs_alleles}}}
+\end{figure}
+
+
+\noindent
+\newline The number of alleles per locus (across all subpopulations):
+<<echo=false, results=hide>>=
+numatall<-as.data.frame(t(sumcats$loc.nall))
+colnames(numatall)<-cats@loc.names
+rownames(numatall)<-"# of alleles"
+numatall
+@
+<<echo=false, results=tex>>=
+brtab((t(numatall)),"Number of alleles per locus across all subpopulations",c("locus","# alleles"),7)
+@
+
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=6in,height=4in]{\Sexpr{fname.n_alleles_per_locus}}}
+\end{figure}
+
+\noindent
+\newline The mean number of alleles per locus (across all locations): \Sexpr{round(mean(sumcats$loc.nall),1)}
+
+
+\noindent
+\newline The percentage of missing data was \Sexpr{round(sumcats$NA.perc,1)}\%
+
+<<echo=false,results=hide>>=
+allresults$dataoverview<-list(N=sumcats$N, numbypop=t(indlist),totalleles=popallelecnt, nallelesbypop=t(numallelespop), nallelesbyloc=numatall, meanalleles=round(mean(sumcats$loc.nall),1),missing=round(sumcats$NA.perc,1))
+@
+
+\FloatBarrier

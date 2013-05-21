@@ -2,7 +2,7 @@
 
 \noindent
 
-<<echo=false>>=
+<<echo=FALSE, results='hide'>>=
 het_obs<-as.data.frame(t(sumcats$Hobs))
 rownames(het_obs)<-"Observed"
 colnames(het_obs)<-cats@loc.names
@@ -19,18 +19,13 @@ het_comb<-merge(het_exp,het_obs,by="Locus")
 het_comb[,4]<-(het_comb[,2]-het_comb[,3])/het_comb[,2]*100
 colnames(het_comb)[4]<-"% difference"
 pop_het_table<-xtable(het_comb, cap="The population-wide expected and observed heterozygosity and percent difference ((E-O)/E*100) at each locus",digits=3)
+write.csv(het_comb, paste(cats@other$filename,"-exp_obs_hz.csv", sep=""), row.names=TRUE)
 @
 
 
-<<echo=false,results=tex>>=
-print(pop_het_table,include.rownames=F, add.to.row=list(list(seq(1,nrow(het_comb),2)),"\\rowcolor[gray]{0.9} "))
-@
+<<echo=FALSE,results='asis'>>=
+print(pop_het_table,include.rownames=FALSE, add.to.row=list(list(seq(1,nrow(het_comb),2)),"\\rowcolor[gray]{0.9} "))
 
-
-
-
-
-<<echo=false>>=
 # for future iterations consider replacing with the tests located here:
 # http://www.sph.umich.edu/csg/abecasis/Exact/index.html
 popbart<-bartlett.test(list(sumcats$Hexp,sumcats$Hobs))
@@ -39,26 +34,7 @@ popbart<-bartlett.test(list(sumcats$Hexp,sumcats$Hobs))
 Bartlett test of homogeneity of variance. This test compares observed vs. expected heterozygosity. A significant result indicates that the population departs from HWE. \\
 Bartlett's K-squared: \Sexpr{round(popbart$statistic,3)}, df = \Sexpr{popbart$parameter[[1]]}, p-value = \Sexpr{round(popbart$p.value,digits=4)}
 
-
-<<echo=false,results=hide>>=
-{
-# pdf("pop_heterozygosity.pdf",width=6,height=4)
-# delta_het<-sumcats$Hexp-sumcats$Hobs
-# min_het<-min(delta_het)-0.05
-# max_het<-max(delta_het)+0.05
-# barplot(sumcats$Hexp-sumcats$Hobs,main="Heterozygosity: expected-observed",ylab="Hexp - Hobs",xlab="Locus",ylim=c(round(min_het,digits=2),round(max_het,digits=2)),las=3, names.arg=cats@loc.names, cex.names=0.8)
-#dev.off() 
-}
-@
-
-<<echo=false,results=hide>>=
-# hiding this sweave figure call
-#\begin{figure}[h]
-#  \centerline{\includegraphics[width=6in,height=4in]{pop_heterozygosity.pdf}}
-#\end{figure}
-@
-
-<<echo=false, results=hide>>=
+<<echo=FALSE, results='hide'>>=
 allresults$PopHet<-list(obs_exp_het_comp=het_comb, Bartlett_test=popbart)
 @
 

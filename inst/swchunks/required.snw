@@ -1,5 +1,5 @@
-<<echo=false,results=hide>>=
-library(RgoogleMaps)
+<<echo=FALSE,results='hide'>>=
+require(RgoogleMaps)
 require(adegenet)
 require(ade4)
 require(pegas)
@@ -14,6 +14,7 @@ require(DEMEtics)
 require(gplots)
 require(mmod)
 require(dismo)
-
+require(R.utils)
+require(knitr)
 options(width = 80)
 @

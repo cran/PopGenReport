@@ -8,7 +8,8 @@ This function converts genetic data provided in a tabular 'comma separated value
 }
 \usage{
 read.genetable(filename, pop = NULL, ind = NULL, lat = NULL, long = NULL,
-other.min = NULL, other.max = NULL, oneColPerAll, missing = NA, sep = NULL, ncode = NULL)
+other.min = NULL, other.max = NULL, oneColPerAll, missing = NA, sep = NULL, 
+ncode = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -48,7 +49,7 @@ a character string separating alleles. See details.
 }
 }
 \details{
-The format of the .csv file is very important. Make sure your headings are exactly as provided in the example file or the conversion will likely fail. Use your favourite text editor to reformat the file (e.g. Excel) to prepare the data and save it as csv file.
+The format of the .csv file is very important. Make sure your \bold{headings are exactly as provided in the example file} or the conversion will likely fail (e.g. use lower cases for all headings). Use your favourite text editor to reformat the file (e.g. Excel) to prepare the data and save it as csv file.
 You need to provide the number of columns for each of your data sections. These are: ind, pop, lat, long, other.min, other.max, and whether there is a single column per allele (if you use a single column for both alleles then you need to specify the seperator as well), or two columns per allele. Please refer to the example files to make sure your file is in the correct format and then check the conversion by typing:
 
 mydata <- read.genetable(\"mygeneticdat.csv\")
@@ -94,5 +95,5 @@ platy2c <- read.genetable( paste(.libPaths()[1],"/PopGenReport/extdata/platypus2
 
 #to get a pdf output you need to have a running Latex version installed on your system.
 #run a report (with a map)
-#popgenreport(platy2c, mk.counts=TRUE, mk.map=TRUE, mk.allele.dist=TRUE, mk.pdf=TRUE)
+#res<- popgenreport(platy2c, mk.counts=TRUE, mk.map=TRUE, mk.allele.dist=TRUE, mk.pdf=TRUE)
 }

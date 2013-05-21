@@ -14,12 +14,12 @@ latlong=NULL
 if ("pop" %in% colnames(gfile))            
   {
   pops <- as.factor(gfile$pop)
-  popnr <- which(colnames(gfile)=="pop")
+  popnr <- which(colnames(gfile)==tolower("pop"))
   }
 if ("ind" %in% colnames(gfile)) 
   {
   inds <- as.factor(gfile$ind)
-  indnr <- which(colnames(gfile)=="ind")
+  indnr <- which(colnames(gfile)==tolower("ind"))
   }
 
 
@@ -46,7 +46,7 @@ for (i in seq(1,dim(genes)[2]-1,2))
   {
   res[,ceiling(i/2)] <- paste(genes[,i], genes[,i+1],sep="/")
   
-  colnames(res)[ceiling(i/2)] <- paste( colnames(genes)[i], colnames(genes)[i+1],sep="/" )
+  colnames(res)[ceiling(i/2)] <- paste(LETTERS[ceiling(i/2)], colnames(genes)[i], colnames(genes)[i+1],sep="-" )
   }
   
 sep="/"

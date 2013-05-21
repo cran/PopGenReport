@@ -1,18 +1,21 @@
 \name{popgenreport}
 \alias{popgenreport}
 \title{
-This is the main function of the package. It analyses an object of class \code{\link{genind}} and then creates a report containing the results of the analysis. There are several routines that can be optionally included in the analysis and there are multip output options including a PDF with the report, R-code and an object (allresults) containing all of the results, which can be used for further analyses. 
+This is the main function of the package. It analyses an object of class \code{\link{genind}} and then creates a report containing the results of the analysis. There are several routines that can be optionally included in the analysis and there are multip output options including a PDF with the report, R-code and an object (\code{fname.results}) containing all of the results, which can be used for further analyses. 
 }
 \description{
 This function is used to analyse population genetic data. The main idea is to provide a framework for analysing microsatellite genetic data using a mix of existing and new functions. The function works on an object of class \code{genind}. There are several ways to convert data into a \code{\link{genind}} object using existing functions provided by the \code{adegenet} package (  \code{\link{import2genind}}, \code{\link{df2genind}},\code{\link{read.fstat}}, \code{\link{read.structure}},
-  \code{\link{read.genetix}} ,\code{\link{read.genepop}}) or refer to \code{\link{read.genetable}}  how to import data from an EXCEL (csv) document. The function performs a number of different genetic analyses (e.g. counts of indivuals and alleles across sub-populations, tests for heterozygosity and Hardy-Weinberg Equilibrium, differentiation statistics Fst, G'st, Jost's D, and genetic distance between individuals and populations), with users having the option to select which analysis routines are included in the report. To select a routine, the user simply turns on a switch e.g. mk.map=TRUE returns a map with the sampling location for each individual (if coordinates (latitudes and longitudes in WGS1984) are provided). 
+  \code{\link{read.genetix}} ,\code{\link{read.genepop}}) or refer to \code{\link{read.genetable}}  how to import data from an EXCEL (csv) document. The function performs a number of different genetic analyses (e.g. counts of indivuals and alleles across sub-populations, tests for heterozygosity and Hardy-Weinberg Equilibrium, differentiation statistics Fst, G'st, Jost's D, and genetic distance between individuals and populations), with users having the option to select which analysis routines are included in the report. To select a routine, the user simply turns on a switch e.g. mk.map=TRUE returns a map with the sampling location for each individual (if coordinates (latitudes and longitudes in WGS1984) are provided).
+Names for alleles (\code{genindobject@loc.names}) are truncated if longer than six characters. If truncated Letters followed by a hyphen are added to guarentee they are unique.
+You can rename them by providing new names by accessing the slot prior to running \code{popgenreport}.
 }
 \usage{
 popgenreport(cats = NULL, mk.counts = T, mk.map=F, maptype="satellite", 
 mapdotcolor ="blue", mapdotsize=1, mapdotalpha=0.4, mapdottype=19 , 
 mk.locihz = F, mk.hwe = F, mk.subgroups = NULL, mk.fst = F, mk.gd.smouse = F, 
 mk.gd.kosman = F, mk.allele.dist = F, mk.differ.stats=F, 
-fname = "PopGenReport", path.pgr=NULL, mk.Rcode = F, mk.complete=F, mk.pdf=T)
+fname = "PopGenReport", foldername="results", path.pgr=NULL, mk.Rcode = F, 
+mk.complete=F, mk.pdf=T)
 }
 \arguments{
   \item{cats}{this is the \code{\link{genind}} object the analysis will be based on. }
@@ -34,18 +37,19 @@ switch is to provide overview counts of the  number of individuals sampled, numb
   \item{mk.allele.dist}{switch to look at allele distributions by loci and subpopulation}
   \item{mk.differ.stats}{switch to look at population differentiation statistics (Nei's Gst, Hedrick's Gst, and Jost's D)}
   \item{fname}{filename for the output files. Defauts to PopGenReport. Note that using a filename which includes a space in the name will result in the filename for each figure being printed out in the PDF report for each figure. Replacing the space with an underscore should prevent this from happening. }
+ \item{foldername}{name of folder, where files are stored. Defaults to 'results'}
   \item{path.pgr}{Folder where the output files are stored. Defaults to the temporary directory (\code{tempdir()}). If you want to store the output in another directory, simply provide the path here. e.g. \code{path.pgr=getwd()} saves it in your current working directory.}
-
   \item{mk.Rcode}{switch to get the full R script that is used to generate the report. A great way to get a very detailed insight on the kind of analysis and also an easy way to generate a script which you can customize for your analytical needs.}
   \item{mk.complete}{switch to create a full report using all of the routines (all switches are set to \code{TRUE}, except \code{mk.subgroups}).}
   \item{mk.pdf}{  switch to create a shiny pdf output. You need a working \bold{latex} version running on your system (e.g. MikTex (Windows) or Texmaker (Linux, MacOSX). For more information refer to the \code{\link{Sweave}} package and its manual.}
 }
 \value{
-The function returns an object that has all of the results produced by this function in it. The structure of the object can be accessed via \code{str(allresults)}. The main slots in this object (if you ran a full report) are:\cr
-\code{dataoverview,PopHet,Alleledist,Fst,HsHtdifferentiate,HWEresults,subgroups,GDKosman,GDSmouse}
+The function returns an object (e.g. res) that has all of the results produced by this function in it. The structure of the object can be accessed via \code{str(res)}. The main slots in this object (if you ran a full report) are:\cr
+\code{dataoverview, PopHet, Alleledist, Fst, HsHtdifferentiate, HWEresults,}
+\cr\code{subgroups, GDKosman, GDSmouse}
 
-Additional ouput is provided in the form of a PDF which will be saved to your current working directory, and maps and figures which will be placed in a figures subfolder which may be generated automatically in your current working directory. 
-If \code{mk.Rcode=T} is set, an R file named yourgeninobject.R will be saved to your current working directory.  
+Additional ouput is provided in the form of a PDF (if mk.pdf=TRUE),which will be saved to the specified subfolder (via foldername) in your current working directory, and maps and figures which will be placed in this folder as well. This folder will be generated automatically in your current working directory. If you do not specify a working directory via \code{path.pgr} then the temporary working directory of R will be used (\code{tempdir()}).
+If \code{mk.Rcode=T} is set, an R file named fname.R will be saved to your specified subfolder.
 
 }
 \references{
@@ -63,12 +67,13 @@ Aaron Adamack & Bernd Gruber, aaron.adamack@canberra.edu.au, bernd.gruber@canber
   \code{\link{mmod}}
   }
 \examples{
-data(bilby)
-popgenreport(bilby[1:100], mk.counts=TRUE, mk.map=TRUE, mk.pdf=FALSE)
+data(bilby) # a generated data set
+res <- popgenreport(bilby[1:100], mk.counts=TRUE, mk.map=TRUE, mk.pdf=FALSE)
+#check results via res or use created tables in the results folder.
 
 ### RUN ONLY with a working Latex version installed, see mk.pdf
 #popgenreport(bilby, mk.counts=TRUE, mk.map=TRUE, mk.pdf=TRUE)
 
 # for a full report in a single pdf set mk.complete to TRUE
-# popgenreport(bilby, mk.complete=TRUE)
+# res <- popgenreport(bilby, mk.complete=TRUE)
 }

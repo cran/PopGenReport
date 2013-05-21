@@ -3,18 +3,19 @@
 \noindent
 \newline The total number of alleles sampled across all locations was \Sexpr{grp_tot_allele[i]}; The total number of alleles seen at each location was:
     
-<<echo=false>>=
+<<echo=FALSE>>=
 loc_allele<-as.matrix(grp_allele_locat[i,])
 colnames(loc_allele)<-"Total number of alleles"
-fname_sampsz_v_allele<-paste("figures/",filename,"-",sexlist[i],"-sampsz_v_allele.png",sep="")
+fname_sampsz_v_allele<-paste(cats@other$filename,"-",sexlist[i],"-sampsz_v_allele.png",sep="")
+write.csv(loc_allele, paste(cats@other$filename,"-",sexlist[i],"-tot_alleles_loc.csv", sep=""), row.names=TRUE)
 @
 
 \begin{figure}[h]
   \centerline{\includegraphics[width=6in,height=4in]{\Sexpr{fname_sampsz_v_allele}}}
 \end{figure}
 
-<<echo=false>>=
-fname_n_alleles_per_locus<-paste("figures/",filename,"-",sexlist[i],"-n_alleles_per_locus.png",sep="")
+<<echo=FALSE>>=
+fname_n_alleles_per_locus<-paste(cats@other$filename,"-",sexlist[i],"-n_alleles_per_locus.png",sep="")
 @
 
 \begin{figure}[h]
@@ -31,7 +32,7 @@ fname_n_alleles_per_locus<-paste("figures/",filename,"-",sexlist[i],"-n_alleles_
 \subsection{Heterozygosity of \Sexpr{sexlist[i]}}
 
 
-<<echo=false>>=
+<<echo=FALSE>>=
 sub_grp_obs_hz<-t(as.matrix(grp_obs_hetz[i,]))
 rownames(sub_grp_obs_hz)<-"Observed"
 colnames(sub_grp_obs_hz)<-cats@loc.names
@@ -48,10 +49,11 @@ sub_het_comb<-merge(sub_grp_exp_hz,sub_grp_obs_hz,by="Locus")
 sub_het_comb[,4]<-(sub_het_comb[,2]-sub_het_comb[,3])/sub_het_comb[,2]*100
 colnames(sub_het_comb)[4]<-"% difference"
 subpop_het_table<-xtable(sub_het_comb, cap="The subgroup-wide expected and observed heterozygosity and percent difference ((E-O)/E*100) at each locus",digits=3)
+write.csv(sub_het_comb, paste(cats@other$filename,"-",sexlist[i],"-exp_obs_hz.csv", sep=""), row.names=TRUE)
 @
 
-<<echo=false,results=tex>>=
-print(subpop_het_table,include.rownames=F,add.to.row=list(list(seq(1,nrow(sub_het_comb),2)),"\\rowcolor[gray]{0.9} "))
+<<echo=FALSE,results='asis'>>=
+print(subpop_het_table,include.rownames=FALSE,add.to.row=list(list(seq(1,nrow(sub_het_comb),2)),"\\rowcolor[gray]{0.9} "))
 @
 \FloatBarrier
 \noindent
@@ -60,7 +62,7 @@ print(subpop_het_table,include.rownames=F,add.to.row=list(list(seq(1,nrow(sub_he
 
 \subsection{\Sexpr{sexlist[i]} F stats for each locus across all sampling locations}
 
-<<echo=false>>=
+<<echo=FALSE>>=
 {
 # Calculate Fst values for each loci
 
@@ -70,20 +72,18 @@ colnames(sub_Fst_results)<-c("Fit", "Fst", "Fis")
 rownames(sub_Fst_results)<-grp_Fst_loci[,1]
 sub_Fst_results<-sub_Fst_results[order(sub_Fst_results$Fst),]
 tab_sub_Fst<-xtable(sub_Fst_results,caption=paste(sexlist[i],"-only Fit, Fst, and Fst values for each locus. The table is sorted in ascending order based on Fst.",sep=""),digits=3)
+write.csv(sub_Fst_results, paste(cats@other$filename,"-",sexlist[i],"-Fst_by_loc.csv", sep=""), row.names=TRUE)
 }                    
 @
 
-<<echo=false,results=tex>>=
+<<echo=FALSE,results='asis'>>=
 
- print(tab_sub_Fst,include.rownames=T,add.to.row=list(list(seq(1,nrow(sub_Fst_results),2)),"\\rowcolor[gray]{0.9} ")   )
+print(tab_sub_Fst,include.rownames=TRUE,add.to.row=list(list(seq(1,nrow(sub_Fst_results),2)),"\\rowcolor[gray]{0.9} ")   )
+
+fname_sub_Fst<-paste(cats@other$filename,"-",sexlist[i],"-Fst.png",sep="")
 @
 
-
-<<echo=false>>=
-fname_sub_Fst<-paste("figures/",filename,"-",sexlist[i],"-Fst.png",sep="")
-@
-
-<<echo=false,results=hide>>=
+<<echo=FALSE,results='hide'>>=
 {
   png(fname_sub_Fst,width=6,height=4,units="in",res=300)
     barplot(sub_Fst_results$Fst, ylim=c(0,signif(max(sub_Fst_results$Fst),1)), names.arg=rownames(sub_Fst_results), las=3,ylab="Fst", cex.names=0.8)
@@ -105,16 +105,17 @@ fname_sub_Fst<-paste("figures/",filename,"-",sexlist[i],"-Fst.png",sep="")
 
 \subsection{\Sexpr{sexlist[i]} - Computation of Nei's pairwise Fst between all pairs of populations}
 
-<<echo=false>>=
+<<echo=FALSE>>=
 sub_mat_fst<-grp_pairFst[1:grp_n_pops[i],1:grp_n_pops[i],i]
 rownames(sub_mat_fst)<-placenames[1:grp_n_pops[i],i]
 colnames(sub_mat_fst)<-placenames[1:grp_n_pops[i],i]
 sub_mat_fst[upper.tri(sub_mat_fst)]<-NA
 
 tab_sub_pairwise_fst<-xtable(sub_mat_fst,caption=paste(sexlist[i]," - Nei's pairwise Fst between all pairs of populations",sep=" "),digits=4)
+write.csv(sub_mat_fst, paste(cats@other$filename,"-",sexlist[i],"-pairwise_Fst.csv", sep=""), row.names=TRUE)
 @
-<<echo=false,results=tex>>=
-print(tab_sub_pairwise_fst,include.rownames=T)
+<<echo=FALSE,results='asis'>>=
+print(tab_sub_pairwise_fst,include.rownames=TRUE)
 @
 
 \FloatBarrier
@@ -122,7 +123,7 @@ print(tab_sub_pairwise_fst,include.rownames=T)
 \subsection{\Sexpr{sexlist[i]} - Hs and Ht based population differentiation statistics}
 
 \subsubsection{Subgroup comparisons by loci and global}
-<<echo=false,results=tex>>=
+<<echo=FALSE,results='asis'>>=
 # This section prints out the HsHt based stats by locus and globally
 difftitle1<-paste(sexlist[i]," - Hs and Ht based estimates of differentiation: Gst, Gst and Dest for each locus",sep="")
 difftitle2<-paste(sexlist[i]," - Hs and Ht based global estimates of differentiation: Gst, Gst and Dest for each locus",sep="")
@@ -131,33 +132,33 @@ sub_diffglobmat<-matrix(NA,nrow=1,ncol=length(sub_different[[i]]$global))
 sub_diffglobmat[1,]<-sub_different[[i]]$global
 colnames(sub_diffglobmat)<-names(sub_different[[i]]$global)
 subdiffglobaltab<-xtable(sub_diffglobmat, cap=difftitle2, digits=3)
-print(subdiffbylocus,include.rownames=T,add.to.row=list(list(seq(1,nrow(sub_different[[i]]$per.locus),2)),"\\rowcolor[gray]{0.9} ") )
-print(subdiffglobaltab,include.rownames=T,add.to.row=list(list(seq(1,nrow(sub_diffglobmat),2)),"\\rowcolor[gray]{0.9} "))
+print(subdiffbylocus,include.rownames=TRUE,add.to.row=list(list(seq(1,nrow(sub_different[[i]]$per.locus),2)),"\\rowcolor[gray]{0.9} ") )
+print(subdiffglobaltab,include.rownames=TRUE,add.to.row=list(list(seq(1,nrow(sub_diffglobmat),2)),"\\rowcolor[gray]{0.9} "))
 @
 
 \FloatBarrier
 
 \subsubsection{Pairwise comparisons}
-<<echo=false,results=tex>>=
+<<echo=FALSE,results='asis'>>=
 # This section prints out the HsHet based stats for pairwise comparisons
  if (length(levels(subgroups@pop))>1)
  {
 subpairDmat<-as.matrix(sub_different_pair[[i]]$pairD)
-subpairDmat[upper.tri(subpairDmat,diag=T)]<-NA
+subpairDmat[upper.tri(subpairDmat,diag=TRUE)]<-NA
 diag(subpairDmat) <- 0
 colnames(subpairDmat)<-grp_pop_names[[i]]
 rownames(subpairDmat)<-grp_pop_names[[i]]
 
 
 subpairGstHmat<-as.matrix(sub_different_pair[[i]]$pairGstH)
-subpairGstHmat[upper.tri(subpairGstHmat,diag=T)]<-NA
+subpairGstHmat[upper.tri(subpairGstHmat,diag=TRUE)]<-NA
 diag(subpairGstHmat) <- 0
 colnames(subpairGstHmat)<-grp_pop_names[[i]]
 rownames(subpairGstHmat)<-grp_pop_names[[i]]
 
 
 subpairGstNmat<-as.matrix(sub_different_pair[[i]]$pairGstN)
-subpairGstNmat[upper.tri(subpairGstNmat,diag=T)]<-NA
+subpairGstNmat[upper.tri(subpairGstNmat,diag=TRUE)]<-NA
 diag(subpairGstNmat) <- 0
 colnames(subpairGstNmat)<-grp_pop_names[[i]]
 rownames(subpairGstNmat)<-grp_pop_names[[i]]
@@ -170,18 +171,18 @@ subpairDtab<-xtable(subpairDmat, cap=subpairdiff1, digits=3)
 subpairGstHtab<-xtable(subpairGstHmat, cap=subpairdiff2, digits=3)
 subpairGstNtab<-xtable(subpairGstNmat, cap=subpairdiff3, digits=3)
 
-if (dim(subpairDmat)[1]<13) print(subpairDtab,include.rownames=T)  else
-print(subpairDtab,include.rownames=T, floating.environment='sidewaystable', scalebox=max(1-(dim(subpairDmat)[1]-15)/50,0.2))
-#print(subpairDtab,include.rownames=T)
-if (dim(subpairGstHmat)[1]<13) print(subpairGstHtab,include.rownames=T)  else
-print(subpairGstHtab,include.rownames=T, floating.environment='sidewaystable', scalebox=max(1-(dim(subpairGstHtab)[1]-15)/50,0.2))
+if (dim(subpairDmat)[1]<13) print(subpairDtab,include.rownames=TRUE)  else
+print(subpairDtab,include.rownames=TRUE, floating.environment='sidewaystable', scalebox=max(1-(dim(subpairDmat)[1]-15)/50,0.2))
+#print(subpairDtab,include.rownames=TRUE)
+if (dim(subpairGstHmat)[1]<13) print(subpairGstHtab,include.rownames=TRUE)  else
+print(subpairGstHtab,include.rownames=TRUE, floating.environment='sidewaystable', scalebox=max(1-(dim(subpairGstHtab)[1]-15)/50,0.2))
 
-#print(subpairGstHtab,include.rownames=T)
-if (dim(subpairGstNmat)[1]<13) print(subpairGstNtab,include.rownames=T)  else
-print(subpairGstNtab,include.rownames=T, floating.environment='sidewaystable', scalebox=max(1-(dim(subpairGstNmat)[1]-15)/50,0.2))
+#print(subpairGstHtab,include.rownames=TRUE)
+if (dim(subpairGstNmat)[1]<13) print(subpairGstNtab,include.rownames=TRUE)  else
+print(subpairGstNtab,include.rownames=TRUE, floating.environment='sidewaystable', scalebox=max(1-(dim(subpairGstNmat)[1]-15)/50,0.2))
 
 
-#print(subpairGstNtab,include.rownames=T)
+#print(subpairGstNtab,include.rownames=TRUE)
   } else cat("There is only one subgroup so pairwise comparisons were not run!")
 
 @
@@ -198,7 +199,7 @@ print(subpairGstNtab,include.rownames=T, floating.environment='sidewaystable', s
 
 \subsection{Testing \Sexpr{sexlist[i]} HWE for each combination of location and locus}
 
-<<echo=false, results=hide>>=
+<<echo=FALSE, results='hide', warnings=FALSE>>=
 # see if there is a significant departure from HWE for each popxloc
 sub_hwe<-sub_testhwe[1:dimhwe[i,1],1:dimhwe[i,2],i]
 rownames(sub_hwe)<-sub_hwe_rownames[i,1:dimhwe[i,1]]
@@ -216,7 +217,7 @@ sub_hwe_table<-xtable(tabsubhw,caption=paste(sexlist[i],"' - Chi-square test of 
 \noindent
 The table below shows the p-value for the test of HWE for each combination of location and locus for the subgroup \Sexpr{sexlist[i]}. The p-values shown here differ from those produced by GENALEX as the Chi-square test performed here includes that Yates continuity correction which GENALEX does not. As a large number of Chi-square tests are performed, $\alpha$ = 0.05  cannot be used as Type I errors are likely to occur. Instead a Bonferroni adjustment is used $\alpha$ = (0.05/ \Sexpr{subdenom}) = \Sexpr{round(0.05/subdenom,digits=5)}.
 
-<<echo=false,results=tex>>=
+<<echo=FALSE,results='asis'>>=
 print(sub_hwe_table,include.rownames=TRUE,add.to.row=list(list(seq(1,nrow(tabsubhw),2)),"\\rowcolor[gray]{0.9} ")  )
 @
 
@@ -225,11 +226,11 @@ print(sub_hwe_table,include.rownames=TRUE,add.to.row=list(list(seq(1,nrow(tabsub
 
 \subsection{Combinations of location and locus that depart from HWE}
 
-<<echo=false, results=tex>>=
+<<echo=FALSE, results='asis'>>=
 # determine which combinations of location and locus are significant compared to Bonferroni corrected alpha.
 subidx<-which(sub_hwe<(0.05/subdenom),TRUE)
 if (dim(subidx)[1]<1){
-  print("There were no significant departures from HWE",quote=F)
+  print("There were no significant departures from HWE",quote=FALSE)
 } else if(dim(subidx)[1]>0){
   row.names(subidx)<-NULL
   subidx<-as.data.frame(subidx)
@@ -266,11 +267,11 @@ if (dim(subidx)[1]<1){
     captext<-cat("Combinations of locus and location that depart from HWE. Table",i,"of",pages,sep=" ")
     tab_sub_ord_sig_hwe<-xtable(temp,caption=cat("Combinations of locus and location that depart from HWE. Table",k,"of",pages,sep=" "),digits=4)
   }
-  print(tab_sub_ord_sig_hwe,include.rownames=F,add.to.row=list(list(seq(1,nrow(temp),2)),"\\rowcolor[gray]{0.9} ") )  
+  print(tab_sub_ord_sig_hwe,include.rownames=FALSE,add.to.row=list(list(seq(1,nrow(temp),2)),"\\rowcolor[gray]{0.9} ") )  
 }
 @
 
-<<echo=false,results=hide>>=
+<<echo=FALSE,results='hide'>>=
   # Output the results to the allresults file
   allresults$subgroups[[i]]<-list(total_pop_grp=grp_tot_allele[i], num_alleles_locat=grp_allele_locat[i,], num_indsamp_locat=grp_loc_pop[i,], n_allele_locus=sum_subgroups$loc.nall, mean_num_alleles=mean(sum_subgroups$loc.nall), missing_data=grp_missing_data[i], sub_grp_heterozygosity=sub_het_comb, Bartlett_k_square=grp_bart_ksq[i], Bartlett_df=grp_bart_df[i], Bartlett_p_val=grp_bart_pval[i], subgroup_fst=sub_Fst_results, grp_pairwise_Fst=sub_mat_fst, grp_diff=sub_different[[i]], grp_pair_diff=sub_different_pair[[i]], grp_HWE_locus=tabsubhw, grp_HWE_numcalcs=subdenom)
 @

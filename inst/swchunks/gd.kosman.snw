@@ -2,30 +2,29 @@
 
 \noindent
 
-<<echo=false, results=hide>>=
+<<echo=FALSE, results='hide'>>=
 
 # calculate genetic distance using Kosman and Leonard function
-genedist<-gd_kosman(cats,verbose=FALSE)
+kosmanout<-gd_kosman(cats,verbose=FALSE)
+genedist<-as.dist(kosmanout$geneticdist)
+loci.used<-as.dist(kosmanout$loci_used)
 
 # calculate geographical distance and divide by 1000 to convert from meters to kilometers
 geodist<-dist(cats@other$mercat)/1000
 
 # make a figure showing geographic distance vs genetic distance
-fname.Kosman_dist<-paste("figures/",filename,"-Kosman_dist.png",sep="")
+fname.Kosman_dist<-paste(cats@other$filename,"-Kosman_dist.png",sep="")
 png(fname.Kosman_dist,width=6,height=4, units="in", res=300)
-  plot(geodist,genedist,pch=20,xlab="Geographic Distance (km)",ylab="Genetic Dissimilarity", col=rgb(0.8,0.5,0.5,0.1))
+  plot(geodist,genedist,pch=20,xlab="Geographic Distance (km)",ylab="Genetic Dissimilarity", col=rgb(0,0,0.8,0.5))
 dev.off()
-@
 
-
-<<echo=false,results=hide>>=
 # add results from this section to allresults list
-allresults$GDKosman<-list(geneticdist=genedist,geogdist=geodist)
+allresults$GDKosman<-list(geneticdist=genedist,geogdist=geodist,lociused=loci.used)
 @
 
 \begin{figure}[h]
   \centerline{\includegraphics[width=6in,height=4in]{\Sexpr{fname.Kosman_dist}}}
-  \caption{Genetic Dissimilarity (Kosman and Leonard) vs Geographic Distance}
+  \caption{Genetic Dissimilarity (Kosman and Leonard 2005) vs Geographic Distance}
 \end{figure}
 
 \FloatBarrier

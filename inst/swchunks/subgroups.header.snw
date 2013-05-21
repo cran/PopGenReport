@@ -1,101 +1,6 @@
 \section{Analysis by subgroup:}
 
-<<echo=false, results=hide>>=
-
-HsHt<-function (x, n) 
-{
-    harmN <- harmonic_mean(table(pop(x)))
-    pops <- pop(x)
-    a <- apply(x@tab, 2, function(row) tapply(row, pops, mean, 
-        na.rm = TRUE))
-    HpS <- sum(1 - apply(a^2, 1, sum, na.rm = TRUE))/n
-    Hs_est <- (2 * harmN/(2 * harmN - 1)) * HpS
-    HpT <- 1 - sum(apply(a, 2, mean, na.rm = TRUE)^2)
-    Ht_est <- HpT + Hs_est/(2 * harmN * n)
-    return(c(Ht_est, Hs_est))
-}
-
-Gst_Nei2<-function (x) 
-{
-    n <- length(unique(pop(x)))
-    Gst.per.locus <- function(g) {
-        hets <- HsHt(g, n)
-        Ht_est <- hets[1]
-        Hs_est <- hets[2]
-        G_est <- (Ht_est - Hs_est)/Ht_est
-        return(c(Hs_est, Ht_est, G_est))
-    }
-    loci <- t(sapply(seploc(x), Gst.per.locus))
-    global_Hs <- mean(loci[, 1], na.rm = T)
-    global_Ht <- mean(loci[, 2], na.rm = T)
-    global_G_est <- (global_Ht - global_Hs)/global_Ht
-    return(list(per.locus = loci[, 3], global = global_G_est))
-}
-
-pairwise_Gst_Nei2<-function (x, linearized = FALSE) 
-{
-    pops <- seppop(x)
-    n.pops <- length(pops)
-    allP <- utils::combn(1:n.pops, 2)
-    pair <- function(index.a, index.b) {
-        a <- pops[[index.a]]
-        b <- pops[[index.b]]
-        temp <- repool(a, b)
-        return(Gst_Nei2(temp)$global)
-    }
-    res <- sapply(1:dim(allP)[2], function(i) pair(allP[, i][1], 
-        allP[, i][2]))
-    attributes(res) <- attributes(dist(1:n.pops))
-    if (linearized) {
-        return(res/(1 - res))
-    }
-    return(res)
-}
-pairwise_D <- function (x, linearized = FALSE) 
-{
-    pops <- seppop(x)
-    n.pops <- length(pops)
-    allP <- utils::combn(1:n.pops, 2)
-    pair <- function(index.a, index.b) {
-        a <- pops[[index.a]]
-        b <- pops[[index.b]]
-        temp <- repool(a, b)
-        return(D_Jost(temp)$global.het)
-    }
-    res <- sapply(1:dim(allP)[2], function(i) pair(allP[, i][1], 
-        allP[, i][2]))
-    attributes(res) <- attributes(dist(1:n.pops))
-    if (linearized) {
-        return(res/(1 - res))
-    }
-    else (return(res))
-}
-
-pairwise_Gst_Hedrick <- function (x, linearized = FALSE) 
-{
-    pops <- seppop(x)
-    n.pops <- length(pops)
-    allP <- utils::combn(1:n.pops, 2)
-    pair <- function(index.a, index.b) {
-        a <- pops[[index.a]]
-        b <- pops[[index.b]]
-        temp <- repool(a, b)
-        return(Gst_Hedrick(temp)$global)
-    }
-    res <- sapply(1:dim(allP)[2], function(i) pair(allP[, i][1], 
-        allP[, i][2]))
-    attributes(res) <- attributes(dist(1:n.pops))
-    if (linearized) {
-        return(res/(1 - res))
-    }
-    return(res)
-}
-
-
-@
-
-
-<<echo=false,results=hide>>=
+<<echo=FALSE,results='hide', warnings=FALSE>>=
 
 # first get a list of the number of sexes
 sexlist<-attributes(cats@other$group)$levels
@@ -143,7 +48,6 @@ sub_different_pair<-rep(list(list()),numsexes)
 
       
 for(i in 1:numsexes){
-  #i<-1
   index <- cats@other$group==sexlist[i] &  !is.na(cats@other$group)
   subgroups<-cats[index]
   grp_pop_names[[i]]<-as.vector(subgroups@pop.names)
@@ -182,7 +86,7 @@ for(i in 1:numsexes){
   grp_bart_ksq[i]<-round(grp_popbart$statistic,3)
   grp_bart_df[i]<-round(grp_popbart$parameter[[1]],0)
   grp_bart_pval[i]<-round(grp_popbart$p.value,4)    
-  fname_sampsz_v_allele<-paste("figures/",filename,"-",sexlist[i],"-sampsz_v_allele.png",sep="")
+  fname_sampsz_v_allele<-paste(cats@other$filename,"-",sexlist[i],"-sampsz_v_allele.png",sep="")
   sampsz_v_allele_cap<-paste("Number of alleles vs location sample - ",sexlist[i],sep="")
   {
     png(fname_sampsz_v_allele,width=6,height=4,units="in",res=300) 
@@ -190,7 +94,7 @@ for(i in 1:numsexes){
       textxy(sum_subgroups$pop.eff,sum_subgroups$pop.nall,(names(sum_subgroups$pop.eff)),cx=0.6)
     dev.off()
   }
-  fname_n_alleles_per_locus<-paste("figures/",filename,"-",sexlist[i],"-n_alleles_per_locus.png",sep="")
+  fname_n_alleles_per_locus<-paste(cats@other$filename,"-",sexlist[i],"-n_alleles_per_locus.png",sep="")
   n_alleles_per_locus_cap<-paste("Number of alleles per locus - ",sexlist[i],sep="")
   {
     png(fname_n_alleles_per_locus,width=6,height=4,units="in",res=300)
@@ -223,7 +127,7 @@ for(i in 1:numsexes){
  {
     sub_different_pair[[i]]$pairD<-pairwise_D(subgroups)    
     sub_different_pair[[i]]$pairGstH<-pairwise_Gst_Hedrick(subgroups)
-    sub_different_pair[[i]]$pairGstN<-pairwise_Gst_Nei2(subgroups)
+    sub_different_pair[[i]]$pairGstN<-pairwise_Gst_Nei(subgroups)
   } 
 }
 @
@@ -231,20 +135,7 @@ for(i in 1:numsexes){
     
 The individual from the subgroups were sampled from the following locations in the following numbers:
 
-<<echo=false>>=
+<<echo=FALSE, warnings=FALSE>>=
 rownames(grp_loc_pop)<-rownamelist
 grp_loc_pop
-@
-
-<<echo=false,results=hide>>=  
-#    subgroup_locnum<-as.data.frame(sum_subgroups$pop.eff)
-#    colnames(subgroup_locnum)<-"Number"
-#    tab_subgroup_locnum<-xtable(subgroup_locnum,caption="Subgroups by location")
-#    tab_subgroup_locnum
-#    subgrp_popallelecnt<-sum(sum_subgroups$loc.nall)
-#    cat("The total number of alleles sampled across all locations was \\Sexpr{subgrp_popallelecnt}; The total number of alleles seen at each location was:")
-#    subgrp_numallelespop<-as.data.frame(sum_subgroups$pop.nall)
-#    rownames(subgrp_numallelespop)<-cats@pop.names
-#    colnames(subgrp_numallelespop)<-"Total number of alleles"
-#    subgrp_numallelespop
 @

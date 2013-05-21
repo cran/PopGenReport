@@ -28,35 +28,50 @@ popgenreport <- function(cats=NULL,
 
                           mk.differ.stats=F ,     # this switch is to look at population differentiation statistics (Fst, Gst, etc)
                           fname="PopGenReport",
+                          foldername="results",
                           path.pgr=NULL,
                           mk.Rcode=F,       # make the code that was ran available as an R file
                           mk.complete=F,    # create a full report)  
                           mk.pdf=T)
 {
-  if (class(cats)!="genind") {cat("You did not provide a valid genind object! Script stopped!\n"); return;}
+  if (class(cats)!="genind") {cat("You did not provide a valid genind object! Script stopped!\n"); return;} 
+  
+  #cut down length of loci names to  6  and make sure they are unique
+  cats@loc.names <- substr(cats@loc.names,1,6)   
+  if (length(unique(cats@loc.names))!= length(cats@loc.names)) cats@loc.names <- paste(LETTERS[1:length(cats@loc.names)],"-",substr(cats@loc.names,1,4), sep="")
+
+  
   
     #set directory where to save a file, defaults to tempdir (follow R policy)
-  current.dir <- getwd()
-  if (is.null(path.pgr)) path.pgr <- tempdir()
+  if (is.null(path.pgr)) 
+  {
+  path.pgr <- tempdir()
+
+  }
+  
+
   
   
-  setwd(path.pgr)
+#  setwd(path.pgr)
   
-  #create a figures folder if not existing...
-  dirfiles <- list.dirs(recursive=F)
-  if (!("./figures" %in% tolower(dirfiles))) {
-    dir.create("figures")
-    cat("There is no figures folder. I am trying to create it otherwise create it manually. \n")
+  #create a foldername folder if not existing...
+  dirfiles <- list.dirs(path=path.pgr, recursive=F)
+  if (!(tolower (file.path(path.pgr,foldername))) %in% tolower(dirfiles)) {
+    dir.create(file.path(path.pgr,foldername))
+    cat("There is no ",foldername, " folder. I am trying to create it; otherwise please create the folder manually. \n",sep="")
   }
 
   # conversion of lat longs to google map data (Mercator (dismo) wants to have long lat)
-  if (!is.null(cats@other$latlong)) cats@other$mercat <- Mercator(cats@other$latlong[,c(2,1)])
+  if (is.null(cats$other$latlong) & is.null(cats@other$mercat)) coords=FALSE else coords=TRUE
+  if (coords) if (!is.null(cats@other$latlong)) cats@other$mercat <- Mercator(cats@other$latlong[,c(2,1)])
   
   # give cats a filename that can be seen in the snw chunks
-  cats@other$filename<-fname
   
+  
+  cats@other$filename<- fname
+  cats@other$foldername<-foldername
   #determine the type of map
-  if (mk.map==T | mk.complete) 
+  if ((mk.map==T | mk.complete) & coords) 
   {
   cats@other$maptype=maptype
   cats@other$mapdotcolor =mapdotcolor
@@ -83,15 +98,22 @@ mk.subgroups <-T
 }
 if (!is.null(mk.subgroups) & is.null(cats$other$group)) 
   {
-  cat("A report for subgroups was requested (mk.subgroups was not NULL), but I could not find a subgroup definition. Set yourgenindobject@other$group to a appropriate factor. mk.subgroups set to FALSE)")
+  cat("A report for subgroups was requested (mk.subgroups was not NULL), but I could not find a subgroup definition. Set yourgenindobject@other$group to a appropriate factor. mk.subgroups was set to FALSE \n")
   mk.subgroups=F
   }
  
 }  else mk.subgroups=F
 
+###################################
+##### create a new environment to run knitr in it
+ pgr <- new.env(parent=.GlobalEnv)
+ assign("cats",cats,envir=pgr)
+###################################
+
+
+
   # save the data in a tempfile
-  
-  save(cats, file="tempcats.rdata")
+ # save(cats, file=paste(foldername,"\\","tempcats.rdata",sep=""))
   
   #check path to the snw files
 path <- NULL
@@ -107,7 +129,7 @@ path <- NULL
 if (is.null(path)) {cat("Could not find snw files in the PopGenReport library folder. Please check if the package is installed correctly (e.g.  installed.packages()[\"PopGenReport\",2]). \n"); return;}
   #for testing:
   #path <- "d:\\bernd\\R\\popgenreport\\inst\\swchunks\\"
-  
+  #path<- "C:\\Aaron files\\popgenreport098\\PopGenReport_0.98\\PopGenReport\\swchunks\\"
   header.file <- readLines(paste(path,"header.snw",sep=""))
   required<- readLines(paste(path,"required.snw",sep=""))
   loaddata<- readLines(paste(path,"load.data.snw",sep=""))
@@ -116,12 +138,12 @@ if (is.null(path)) {cat("Could not find snw files in the PopGenReport library fo
   
   cat("Compiling report...\n")
   if(mk.counts | mk.complete){
-    cat("- Generall summary...\n")
+    cat("- General summary...\n")
     overview<-readLines(paste(path,"counts.snw",sep=""))
     compl<-c(compl,overview)
   }
   
-  if (mk.map | mk.complete){
+  if ((mk.map==T | mk.complete) & coords){
     cat("- Map of individuals...\n")  
     mapping<-  readLines(paste(path,"map.snw",sep=""))
     compl<-c(compl,mapping)
@@ -142,7 +164,7 @@ if (is.null(path)) {cat("Could not find snw files in the PopGenReport library fo
     figfilelabel<-paste(path,"allele",i,".pdf",sep="")
     line1ad<-"\\begin{figure}[hptb]"
     line2ad<-"\n"
-    line3ad<-paste("\\centerline {\\includegraphics[width=6in,height=4.5in] {figures/",fname,"-allele",i,".png}}",sep="")
+    line3ad<-paste("\\centerline {\\includegraphics[width=6in,height=4.5in] {",fname,"-allele",i,".png}}",sep="")
     line4ad<-"\n"
     line5ad<-"\\end{figure}"
     line6ad<-"\n"
@@ -164,24 +186,25 @@ if (mk.fst| mk.complete){
 }
 if (mk.differ.stats | mk.complete){
      cat("- Pairwise differentiations ...\n")  
-  differentiate<-readLines(paste(path,"differ.stats.snw",sep=""))
+     differentiate<-readLines(paste(path,"differ.stats.snw",sep=""))
   compl<-c(compl,differentiate)
 }
 
 if (mk.hwe | mk.complete){
-  cat("- Test for Hardy-Weinberg-Equilibria ...\n")  
+  cat("- Test for Hardy-Weinberg-Equilibrium ...\n") 
+  cat("  !! You may get warnings when running HWE tests, if a locus has less than five alleles!! \n")
   popHWEll<-readLines(paste(path,"hwe.snw",sep=""))
   compl<-c(compl,popHWEll)
 }
 
-if (mk.gd.kosman | mk.complete){
-  cat("- Kosman & Leonard genetic distances...\n")
+if ((mk.gd.kosman==T | mk.complete) & coords){
+  cat("- Kosman & Leonard 2005 genetic distances...\n")
   kosman<-readLines(paste(path,"gd.kosman.snw",sep=""))
   compl<-c(compl,kosman)
 }
 
-if (mk.gd.smouse | mk.complete){
-  cat("- Smouse & Peakall genetic distances...\n")
+if ((mk.gd.smouse==T | mk.complete) & coords){
+  cat("- Smouse & Peakall 1999 genetic distances...\n")
   smouse<-readLines(paste(path,"gd.smouse.snw",sep=""))
   compl<-c(compl,smouse)
 }
@@ -195,9 +218,12 @@ if (mk.subgroups){
   # now count the number of distinct sexes tracked
   numsexes<-length(sexlist)
   subsec<-rep(NA,numsexes)
+#  assign("sexlist",sexlist,envir=pgr)
+#  assign("numsexes",numsexes,envir=pgr)
+#  assign("subsec",subsec,envir=pgr)
   for (j in 1:numsexes){
     i<-j           
-    line1rpt<-"<<echo=false,results=hide>>="
+    line1rpt<-"<<echo=FALSE,results='asis', warnings=FALSE>>="
     line2rpt<-"\n"
     line3rpt<-paste("i<-",i,sep="")
     line4rpt<-"\n"
@@ -217,37 +243,39 @@ compl<-c(compl,footer.file)
 #compl <- c(header.file, required, loaddata, mapping, popheterozygosity, footer.file)
 
 
+rnwfile <- paste(fname,".rnw",sep="")
+texfile <-  paste(fname,".tex",sep="") 
 
 
-zz <- file(paste(fname,".rnw",sep=""), "w")
+zz <- file(file.path(path.pgr,foldername,rnwfile), "w")
 writeLines(compl,zz)
 close(zz) 
 
+
+#setwd(paste(path.pgr,foldername, sep="/"))
 cat(paste("Analysing data ...\n", sep=""))
-Sweave(paste(fname,".rnw",sep=""), output=paste(fname,".tex",sep=""), quiet=T)
+#Sweave(paste(fname,".rnw",sep=""), output=paste(fname,".tex",sep=""), quiet=F, driver=mydriver)
+
+knit(input=file.path(path.pgr,foldername,rnwfile), output=file.path(path.pgr,foldername,texfile), quiet=T, envir=pgr)
 
 if (mk.pdf==T)
 {
-cat(paste("Creating pdf from: ",fname,".rnw ...\n",sep=""))
-tools::texi2pdf(paste(fname,".tex",sep=""))
+cat(paste("Creating pdf from: ",rnwfile," ...\n",sep=""))
+knit2pdf(file.path(path.pgr,foldername,texfile),file.path(path.pgr,foldername, texfile))
 cat(paste("Finished.\nCheck ",fname,".pdf for results.\n", sep=""))
 }
+
 if (mk.Rcode) {
-  cat(paste("Creating Rcode: ", fname,".rnw ...\n"), sep="")
-  Stangle(paste(fname,".rnw",sep=""))
+  cat(paste("Creating R code from: ",rnwfile,"...\n"), sep="")
+  rfile <-paste(fname,".R",sep="")
+  purl(input=file.path(path.pgr,foldername,rnwfile), output=file.path(path.pgr,foldername,rfile))
+#  Stangle(paste(fname,".rnw",sep=""))
 }
     
 
-
-cat("All figures are available in the figures subfolder\n")
-
-cat(paste("Files are saved under: ", path.pgr,"\n", sep=""))
+cat(paste("All files are available in the folder: ", paste(path.pgr,"/",foldername,"\n", sep="")))
 
 #reset working directory to previous
-
-setwd(current.dir)
-
+#setwd(current.dir)
+return(pgr$allresults)
 }
- 
- 
-                                              

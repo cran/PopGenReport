@@ -24,9 +24,9 @@ Aaron Adamack, aaron.adamack@canberra.edu.au
 \code{\link{popgenreport}}
 }
 \examples{
- data(bilby)
+# data(bilby)
  #here we use only the first 50 individuals to speep up the example
- popgenreport(bilby[1:50,1:12], mk.allele.dist=TRUE, mk.pdf=FALSE)
+# popgenreport(bilby, mk.allele.dist=TRUE, mk.pdf=FALSE)
  
 #to get a pdf output you need to have a running Latex version installed on your system.
 #popgenreport(bilby, mk.allele.dist=TRUE, mk.pdf=TRUE)

@@ -1,7 +1,0 @@
-<<echo=FALSE,results='hide'>>=
-#load("tempcats.rdata")
-sumcats<-summary(cats)
-samplocnum<-sumcats$pop.eff
-filename<-cats@other$filename
-allresults<-list()
-@

@@ -4,7 +4,7 @@
 
 <<echo=FALSE, results='hide'>>=
 # create a scratchpad version of individual coordinates
-tempcoords<-cats@other$mercat
+tempcoords<-cats@other$xy
 
 # get an initial count of individuals
 initmaxind<-(dim(tempcoords))[1]
@@ -31,31 +31,22 @@ if(length(indsrmv)>0){
   tempcoords<-tempcoords[indsrmv,]
 }
 
-
 # calculate genetic distance based on Smouse and Peakall
-genedist<-gd_smouse(cats,verbose=FALSE)
-
+genedist<-gd.smouse(cats,verbose=FALSE)
 # calculate genetic distance
-geodist<-dist(tempcoords)/1000
+geodist<-dist(tempcoords)
 
-# now create figure
-fname.smouse_dist<-paste(cats@other$filename,"-smouse_dist.png",sep="")
-png(fname.smouse_dist,width=6,height=4, units="in", res=300)
-  plot(geodist,genedist,pch=20,xlab="Geographic Distance (km)",ylab="Genetic Dissimilarity", col=rgb(0,0,0.8,0.5))
-dev.off()
+allresults$gd.smouse<-list(geneticdist=genedist,geogdist=geodist)
 @
 
 
-<<echo=FALSE,results='hide'>>=
-allresults$GDSmouse<-list(geneticdist=genedist,geogdist=geodist)
+
+<<Smouse-dist, echo=FALSE, fig.width=6, fig.height=4, fig.path=fig.path, dev=dev, dpi=dpi, fig.cap="Genetic Dissimilarity (Smouse and Peakall 1999) vs Geographic Distance. The line represents the running average.">>=
+
+  xyplot(genedist~geodist,pch=20,xlab="Geographic Distance",ylab="Genetic Dissimilarity", col=rgb(0,0,0.8,0.5), type=c("p", "smooth"),xlim=c((0-0.02*max(geodist,na.rm=TRUE)),(max(geodist,na.rm=TRUE)*1.05)),ylim=c(0,(max(genedist)*1.05)), lwd=4)
+
+
 @
 
-
-\begin{figure}[h]
-  \centerline{\includegraphics[width=6in,height=4in]{\Sexpr{fname.smouse_dist}}}
-  \caption{Genetic Dissimilarity (Smouse and Peakall 1999) vs Geographic Distance}
-\end{figure}
-
-\FloatBarrier
 
 

@@ -1,12 +1,13 @@
 popgenreport <- function(cats=NULL,
                           
-                          mk.counts=T,   # this switch is to provide a population overview
-                          mk.map=F,        # this switch is for the map
+                            mk.counts=TRUE,   # this switch is to provide a population overview
+                            mk.map=FALSE,        # this switch is for the map
                             maptype="satellite",
                             mapdotcolor ="blue",
                             mapdotsize=1,
                             mapdotalpha=0.4,
                             mapdottype=19 ,
+                            mapzoom=NULL,
                           
 #c("roadmap",
 #"mobile",
@@ -17,24 +18,52 @@ popgenreport <- function(cats=NULL,
 #"mapmaker-hybrid")",
 #                          
                           
-                          mk.locihz=F,     # this switch is to test for population heterozygosity
-                          mk.hwe=F,   # this switch is for population wide HWE
-                          mk.subgroups=NULL,  # this switch is to run the analysis for subgroups
-                          mk.fst=F,        # this switch is to run FST tests on the full population
-                          mk.gd.smouse=F,   # this switch is to run the Smouse and Peakall genetic distances
-                          mk.gd.kosman=F,   # this switch is to run the Kosman and Leonard genetic distances
+                          mk.locihz=FALSE,     # this switch is to test for population heterozygosity
+                          mk.hwe=FALSE,   # this switch is for population wide HWE
 
-                          mk.allele.dist=F, # this switch it to look at allele distributions by loci and pop
+                          mk.fst=FALSE,        # this switch is to run FST tests on the full population
+                          mk.gd.smouse=FALSE,   # this switch is to run the Smouse and Peakall genetic distances
+                          mk.gd.kosman=FALSE,   # this switch is to run the Kosman and Leonard genetic distances
 
-                          mk.differ.stats=F ,     # this switch is to look at population differentiation statistics (Fst, Gst, etc)
+                          mk.pcoa=FALSE,
+                          mk.spautocor=FALSE,
+                          mk.allele.dist=FALSE, # this switch it to look at allele distributions by loci and pop
+                          mk.null.all=FALSE,
+                          mk.allel.rich=FALSE,
+
+                          mk.differ.stats=FALSE ,     # this switch is to look at population differentiation statistics (Fst, Gst, etc)
+                          mk.custom = FALSE,
                           fname="PopGenReport",
                           foldername="results",
                           path.pgr=NULL,
-                          mk.Rcode=F,       # make the code that was ran available as an R file
-                          mk.complete=F,    # create a full report)  
-                          mk.pdf=T)
+                          mk.Rcode=FALSE,       # make the code that was ran available as an R file
+                          mk.complete=FALSE,    # create a full report)  
+                          mk.pdf=TRUE)
 {
-  if (class(cats)!="genind") {cat("You did not provide a valid genind object! Script stopped!\n"); return;} 
+  if (class(cats)!="genind") {cat("You did not provide a valid genind object! Script stopped!\n"); return;}
+  
+  # Check for combinations of populations and loci with low numbers of individuals and alleles  
+  npops<-length(levels(cats@pop))
+  nloci<-length(cats@loc.names)
+  
+  # this splits bilby up into loci
+  loci<-seploc(cats)
+  
+  # this further subdivides the loci into populations
+  locipop<-lapply(loci,seppop)
+  
+  popsizes<-matrix(NA,nrow=nloci,ncol=npops)
+  for (i in 1:nloci){
+    for (j in 1:npops){
+      popsizes[i,j]<-sum(!is.na(apply(locipop[[i]][[j]]@tab,1,sum)))
+    }
+  }
+  
+  for(i in 1:dim(popsizes)[2]){
+    numlow<-length(which(popsizes[,i]<3))
+    if(numlow>0) message("Population ",unname(cats@pop.names)[i]," has ",numlow," locus/loci with less than 3 genotypes. This may cause errors in some analyses. We advice to combine or drop populations with low numbers of genotypes. ")
+  }
+  
   
   #cut down length of loci names to  6  and make sure they are unique
   cats@loc.names <- substr(cats@loc.names,1,6)   
@@ -55,55 +84,43 @@ popgenreport <- function(cats=NULL,
 #  setwd(path.pgr)
   
   #create a foldername folder if not existing...
-  dirfiles <- list.dirs(path=path.pgr, recursive=F)
+  dirfiles <- list.dirs(path=path.pgr, recursive=FALSE)
   if (!(tolower (file.path(path.pgr,foldername))) %in% tolower(dirfiles)) {
     dir.create(file.path(path.pgr,foldername))
-    cat("There is no ",foldername, " folder. I am trying to create it; otherwise please create the folder manually. \n",sep="")
+    cat("There is no ",foldername, " folder. I am trying to create it; \notherwise please create the folder manually. \n",sep="")
   }
 
   # conversion of lat longs to google map data (Mercator (dismo) wants to have long lat)
-  if (is.null(cats$other$latlong) & is.null(cats@other$mercat)) coords=FALSE else coords=TRUE
-  if (coords) if (!is.null(cats@other$latlong)) cats@other$mercat <- Mercator(cats@other$latlong[,c(2,1)])
   
+
+  coords=FALSE
+  if (is.null(cats$other$latlong) & is.null(cats@other$xy)) coords=FALSE else {
+  if (!is.null(cats@other$latlong)) cats@other$xy <- Mercator(cats@other$latlong[,c(2,1)])
+  if (!is.null(cats@other$xy)) cats@other$latlong <- Mercator(cats@other$xy, inverse=TRUE)[,c(2,1)]  
+  
+  if ((nrow(cats@other$latlong) == length(cats@ind.names)) & (nrow(cats@other$xy) == length(cats@ind.names) )) coords=TRUE
+  
+
+
+  } 
   # give cats a filename that can be seen in the snw chunks
   
   
   cats@other$filename<- fname
   cats@other$foldername<-foldername
+  cats@other$path <- path.pgr
   #determine the type of map
-  if ((mk.map==T | mk.complete) & coords) 
+  if ((mk.map==TRUE | mk.complete) & coords) 
   {
   cats@other$maptype=maptype
   cats@other$mapdotcolor =mapdotcolor
   cats@other$mapdotsize=mapdotsize
   cats@other$mapdotalpha=mapdotalpha
   cats@other$mapdottype=mapdottype
+  cats@other$mapzoom=mapzoom
+  
   }  
   
-  #stick in group for subgroup routines
-#if mk.subgroups==T use from group cats@other$data$group
-if (!is.null(mk.subgroups))
-{
-if (mk.subgroups[1]==T & !is.null(cats$other$data$group)  )
- 
-{
-cats@other$group <- cats$other$data$group
-}
-#if subgroups is a factor of the according length then use this...
- 
-if (is.factor(mk.subgroups))
-{
-cats@other$group <- mk.subgroups
-mk.subgroups <-T
-}
-if (!is.null(mk.subgroups) & is.null(cats$other$group)) 
-  {
-  cat("A report for subgroups was requested (mk.subgroups was not NULL), but I could not find a subgroup definition. Set yourgenindobject@other$group to a appropriate factor. mk.subgroups was set to FALSE \n")
-  mk.subgroups=F
-  }
- 
-}  else mk.subgroups=F
-
 ###################################
 ##### create a new environment to run knitr in it
  pgr <- new.env(parent=.GlobalEnv)
@@ -132,9 +149,7 @@ if (is.null(path)) {cat("Could not find snw files in the PopGenReport library fo
   #path<- "C:\\Aaron files\\popgenreport098\\PopGenReport_0.98\\PopGenReport\\swchunks\\"
   header.file <- readLines(paste(path,"header.snw",sep=""))
   required<- readLines(paste(path,"required.snw",sep=""))
-  loaddata<- readLines(paste(path,"load.data.snw",sep=""))
-  compl<-c(header.file,required,loaddata) # deleted dataprep from the last slot in this call
-  
+  compl<-c(header.file,required) 
   
   cat("Compiling report...\n")
   if(mk.counts | mk.complete){
@@ -142,8 +157,8 @@ if (is.null(path)) {cat("Could not find snw files in the PopGenReport library fo
     overview<-readLines(paste(path,"counts.snw",sep=""))
     compl<-c(compl,overview)
   }
-  
-  if ((mk.map==T | mk.complete) & coords){
+  if (coords==FALSE) cat(" - No valid coordinates were provided. \n   Be aware you need to provide a coordinate (or NA) for each individual\n   and the coordinate heading in slot @other has to be 'latlong' or 'xy'.\n   Some of the analyses require coordinates and will be skipped!\n") 
+  if ((mk.map==TRUE | mk.complete) & coords){
     cat("- Map of individuals...\n")  
     mapping<-  readLines(paste(path,"map.snw",sep=""))
     compl<-c(compl,mapping)
@@ -160,34 +175,26 @@ if (is.null(path)) {cat("Could not find snw files in the PopGenReport library fo
     numloci<-length(cats@loc.nall)
     alleledistn <- readLines(paste(path,"allele.dist.snw",sep=""))
     compl<-c(compl,alleledistn)
-  for (i in 1:numloci){
-    figfilelabel<-paste(path,"allele",i,".pdf",sep="")
-    line1ad<-"\\begin{figure}[hptb]"
-    line2ad<-"\n"
-    line3ad<-paste("\\centerline {\\includegraphics[width=6in,height=4.5in] {",fname,"-allele",i,".png}}",sep="")
-    line4ad<-"\n"
-    line5ad<-"\\end{figure}"
-    line6ad<-"\n"
-    if (i%%10==0){
-      line7ad<-"\\FloatBarrier"
-      line8ad<-"\n"
-      compl<-c(compl,line1ad,line2ad,line3ad,line4ad,line5ad,line6ad,line7ad,line8ad)
-    } else {
-      compl<-c(compl,line1ad,line2ad,line3ad,line4ad,line5ad,line6ad)
-    }
-    compl<-c(compl,"\n")
-  }  
 }
-
 if (mk.fst| mk.complete){
      cat("- Pairwise Fst ...\n")  
   popfst<-readLines(paste(path,"fst.snw",sep=""))
   compl<-c(compl,popfst)
 }
+if (mk.null.all | mk.complete){
+     cat("- Checking for null alleles ...\n")  
+     null.stat<-readLines(paste(path,"null.all.snw",sep=""))
+  compl<-c(compl,null.stat)
+}
+if (mk.allel.rich | mk.complete){
+     cat("- Allelic richness ...\n")  
+     all.stat<-readLines(paste(path,"allel.rich.snw",sep=""))
+  compl<-c(compl,all.stat)
+}
 if (mk.differ.stats | mk.complete){
      cat("- Pairwise differentiations ...\n")  
-     differentiate<-readLines(paste(path,"differ.stats.snw",sep=""))
-  compl<-c(compl,differentiate)
+     diff.stat<-readLines(paste(path,"differ.stats.snw",sep=""))
+  compl<-c(compl,diff.stat)
 }
 
 if (mk.hwe | mk.complete){
@@ -197,47 +204,37 @@ if (mk.hwe | mk.complete){
   compl<-c(compl,popHWEll)
 }
 
-if ((mk.gd.kosman==T | mk.complete) & coords){
+if ((mk.gd.kosman==TRUE | mk.complete) & coords){
   cat("- Kosman & Leonard 2005 genetic distances...\n")
   kosman<-readLines(paste(path,"gd.kosman.snw",sep=""))
   compl<-c(compl,kosman)
 }
 
-if ((mk.gd.smouse==T | mk.complete) & coords){
+if ((mk.gd.smouse==TRUE | mk.complete) & coords){
   cat("- Smouse & Peakall 1999 genetic distances...\n")
   smouse<-readLines(paste(path,"gd.smouse.snw",sep=""))
   compl<-c(compl,smouse)
 }
-
-if (mk.subgroups){
-  cat("- Analysis for user defined subgroups...\n") 
-  subgrp_header <- readLines(paste(path,"subgroups.header.snw",sep=""))
-  compl<-c(compl,subgrp_header)
-  # first get a list of the number of sexes
-  sexlist<-attributes(cats@other$group)$levels
-  # now count the number of distinct sexes tracked
-  numsexes<-length(sexlist)
-  subsec<-rep(NA,numsexes)
-#  assign("sexlist",sexlist,envir=pgr)
-#  assign("numsexes",numsexes,envir=pgr)
-#  assign("subsec",subsec,envir=pgr)
-  for (j in 1:numsexes){
-    i<-j           
-    line1rpt<-"<<echo=FALSE,results='asis', warnings=FALSE>>="
-    line2rpt<-"\n"
-    line3rpt<-paste("i<-",i,sep="")
-    line4rpt<-"\n"
-    line5rpt<-"@"
-    line6rpt<-"\n"
-    compl<-c(compl,line1rpt,line2rpt,line3rpt,line4rpt,line5rpt,line6rpt)
-    subsectcode<-readLines(paste(path,"subgroups.sectionout.snw",sep=""))
-    compl<-c(compl,subsectcode)
-  }
+if ((mk.spautocor==TRUE | mk.complete) & coords){
+  cat("- Spatial autocorrelation following Smouse & Peakall 1999 ...\n")
+  spa<-readLines(paste(path,"spautocor.snw",sep=""))
+  compl<-c(compl,spa)
 }
- 
+if (mk.pcoa==TRUE | mk.complete){
+  cat("- Principal coordinate analysis following Jombart et al. 2009...\n")
+  pca<-readLines(paste(path,"pcoa.snw",sep=""))
+  compl<-c(compl,pca)
+}
 
-cat("\n") 
-footer.file<-readLines(paste(path,"footer.snw",sep=""))
+if (mk.custom==TRUE){
+  cat("- Run customised snw file, custom.snw ...\n")
+  custom<-readLines(paste(path,"custom.snw",sep=""))
+  compl<-c(compl,custom)
+}
+
+
+
+footer.file<-readLines(paste(path,"footer.snw",sep=""))  
 compl<-c(compl,footer.file)
 
 #compl <- c(header.file, required, loaddata, mapping, popheterozygosity, footer.file)
@@ -254,11 +251,11 @@ close(zz)
 
 #setwd(paste(path.pgr,foldername, sep="/"))
 cat(paste("Analysing data ...\n", sep=""))
-#Sweave(paste(fname,".rnw",sep=""), output=paste(fname,".tex",sep=""), quiet=F, driver=mydriver)
+#Sweave(paste(fname,".rnw",sep=""), output=paste(fname,".tex",sep=""), quiet=FALSE, driver=mydriver)
+flush.console()
+knit(input=file.path(path.pgr,foldername,rnwfile), output=file.path(path.pgr,foldername,texfile), quiet=TRUE, envir=pgr)
 
-knit(input=file.path(path.pgr,foldername,rnwfile), output=file.path(path.pgr,foldername,texfile), quiet=T, envir=pgr)
-
-if (mk.pdf==T)
+if (mk.pdf==TRUE)
 {
 cat(paste("Creating pdf from: ",rnwfile," ...\n",sep=""))
 knit2pdf(file.path(path.pgr,foldername,texfile),file.path(path.pgr,foldername, texfile))
@@ -273,7 +270,7 @@ if (mk.Rcode) {
 }
     
 
-cat(paste("All files are available in the folder: ", paste(path.pgr,"/",foldername,"\n", sep="")))
+cat(paste("All files are available in the folder: \n", paste(path.pgr,"/",foldername,"\n", sep="")))
 
 #reset working directory to previous
 #setwd(current.dir)

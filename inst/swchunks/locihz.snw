@@ -35,7 +35,7 @@ Bartlett test of homogeneity of variance. This test compares observed vs. expect
 Bartlett's K-squared: \Sexpr{round(popbart$statistic,3)}, df = \Sexpr{popbart$parameter[[1]]}, p-value = \Sexpr{round(popbart$p.value,digits=4)}
 
 <<echo=FALSE, results='hide'>>=
-allresults$PopHet<-list(obs_exp_het_comp=het_comb, Bartlett_test=popbart)
+allresults$locihz<-list(obs_exp_het_comp=het_comb, Bartlett_test=popbart)
 @
 
 \FloatBarrier

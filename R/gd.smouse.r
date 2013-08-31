@@ -1,4 +1,4 @@
-gd_smouse <- function(population, verbose=TRUE){
+gd.smouse <- function(population, verbose=TRUE){
   # check to see if the passed data is of the right type
   if (class(population) != "genind") {
     message("You did not provide a valid genind object! Script stopped!")
@@ -62,7 +62,7 @@ gd_smouse <- function(population, verbose=TRUE){
 
   for (i in 1:numpops){   #numpops this is looping over pops
     for (j in i:numpops){ #numpops this is looping over pops
-      if(verbose) message("I'm in this round i = ",i," j = ",j)
+      if(verbose) cat("\r","Comparing population ",population@pop.names[i]," with population ",population@pop.names[j])
       pop1<-which(indpop==poplist[i]) # gets a list of individuals from pop1
       pop2<-which(indpop==poplist[j]) # gets a list of individuals from pop2
       smoused.loci<-array(NA,c(length(pop2),length(pop1),maxloci))
@@ -107,14 +107,14 @@ gd_smouse <- function(population, verbose=TRUE){
       }
       # this step ID's all array elements for which we have a distance and allows us to mask other elements 
       # e.g. (the upper triangle elements) so that we can solve missing values
-      check<-smoused.loci[,,,drop=F]>=0  
+      check<-smoused.loci[,,,drop=FALSE]>=0  
       # now we come up with a value for missing genetic distances between individuals in same population
       if (i==j){
         if (length(pop1)>1 && length(pop2)>1){
           for(k in 1:maxloci){ 
             set<-as.matrix(smoused.loci[,,k]) # get the matrix for a particular loci
             set[upper.tri(set)]<-NA           # block the upper tri angle
-            frame<-check[,,k,drop=F]
+            frame<-check[,,k,drop=FALSE]
             locimean<-sum(set[frame],na.rm=TRUE)/sum(frame[lower.tri(frame)],na.rm=TRUE)  
             for(m in 1:(length(pop1)-1)){ # loop over columns
               for (l in (m+1):length(pop2)){ # loop over rows

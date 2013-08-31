@@ -13,44 +13,21 @@ long.min<-floor(min(cats@other$latlong[,2], na.rm=TRUE))
 long.max<-ceiling(max(cats@other$latlong[,2], na.rm=TRUE))
 long.mean<-mean(cats@other$latlong[,2], na.rm=TRUE)
 
-# need to determine aspect ratio of figure
-#merc.height<-max(cats@other$mercat[,2], na.rm=TRUE) - min(cats@other$mercat[,2], na.rm=TRUE)
-#merc.width<-max(cats@other$mercat[,1], na.rm=TRUE) - min(cats@other$mercat[,1], na.rm=TRUE)
-#merc.ratio<-merc.height/merc.width
-#fig.height<-merc.ratio*6.0
-
 # get maps from Google
 # using bounding box instead of center coordinates
-newmap <- GetMap.bbox(lonR=c(long.min, long.max), latR=c(lat.min, lat.max), maptype=cats@other$maptype)
 
-# Using this code to just force all dots to be red. In RGB r = red, g = green, b = blue, and 4th setting
-# is alpha (transparency of the symbol). It is possible to come up with sub-group specific colors. See 
-# some of the earlier versions of the r-script for an example of how to do this. 
+if (is.null(cats@other$mapzoom)) 
+  newmap <- GetMap.bbox(lonR=c(long.min, long.max), latR=c(lat.min, lat.max), maptype=cats@other$maptype) else 
+ newmap <- GetMap.bbox(lonR=c(long.min, long.max), latR=c(lat.min, lat.max), maptype=cats@other$maptype, zoom= cats@other$mapzoom)
+  
+  
 mapcolor <-   col2rgb(cats@other$mapdotcolor)/255
 colX = rgb(mapcolor[1,],mapcolor[2,], mapcolor[3,],cats@other$mapdotalpha)
-#table(colX)
-
-# Plot the points onto the map
-#locations<-PlotOnStaticMap(newmap,lat = cats@other$latlong[,1], lon = cats@other$latlong[,2], zoom=12, cex=cats@other$mapdotsize, pch= cats@other$mapdottype, col=colX, FUN = points, add=FALSE)
-#dev.off()
-#pdf("figures\\locations1.pdf",width=6,height=fig.height)
-fname.map<-paste(cats@other$filename,"-sample_map.pdf",sep="")
-png(paste(cats@other$filename,"-sample_map.png",sep=""))
-PlotOnStaticMap(newmap,lat = cats@other$latlong[,1], lon = cats@other$latlong[,2], zoom=
-  12,  cex=cats@other$mapdotsize, pch= cats@other$mapdottype,  col=colX, FUN = points, add=FALSE)
-dev.off()
-pdf(fname.map)
-PlotOnStaticMap(newmap,lat = cats@other$latlong[,1], lon = cats@other$latlong[,2], zoom=
-  12,  cex=cats@other$mapdotsize, pch= cats@other$mapdottype,  col=colX, FUN = points, add=FALSE)
-dev.off()
 @
 
-\begin{figure}[h]
-  \begin{center}
-    \includegraphics{\Sexpr{fname.map}}
-    \caption{Sampling locations}
-    \label {fig:locations1}
-  \end{center}
-\end{figure}
+<<map, echo=FALSE, fig.path=fig.path, dev=dev, dpi=dpi, fig.cap="Sample locations">>=
+PlotOnStaticMap(newmap,lat = cats@other$latlong[,1], lon = cats@other$latlong[,2],  cex=cats@other$mapdotsize, pch= cats@other$mapdottype,  col=colX, FUN = points, add=FALSE)
+@
+
 
 \FloatBarrier

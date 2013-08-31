@@ -5,6 +5,10 @@
 \usepackage[margin=1.0in]{geometry}
 \usepackage[table]{xcolor}
 \usepackage[hidelinks]{hyperref}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\topfraction}{0.8}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\floatpagefraction}{0.75}
 \begin{document}
 
 \title{A Population Genetic Report}

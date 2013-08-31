@@ -1,11 +1,11 @@
-\name{gd_smouse}
-\alias{gd_smouse}
+\name{gd.smouse}
+\alias{gd.smouse}
 \title{Individual genetic distance calculation based on Smouse and Peakall 1999}
 \description{
 Calculate pairwise genetic distances between all individuals using the individual genetic distance measure of Smouse and Peakall (1999). This function should produce the same results as the individual genetic distances calculated using GenAlEx and choosing the interpolate missing data option. Note that depending on your computers capabilities, you may run into memory errors when this function is used on datasets with large numbers of individuals (>1000).
 }
 \usage{
-gd_smouse(population, verbose = TRUE)
+gd.smouse(population, verbose = TRUE)
 }
 \arguments{
   \item{population}{this is the \code{\link{genind}} object that the analysis will be based on.}
@@ -24,10 +24,9 @@ Aaron Adamack, aaron.adamack@canberra.edu.au
 \code{\link{popgenreport}}
 }
 \examples{
-data(bilby)
-#here we use only the first 50 individuals to speep up the example
-popgenreport(bilby[1:50], mk.gd.smouse = TRUE, mk.pdf=FALSE)
-
+#not run:
+#data(bilby)
+#popgenreport(bilby, mk.gd.smouse = TRUE, mk.pdf=FALSE)
 #to get a pdf output you need to have a running Latex version installed on your system.
 #popgenreport(bilby, mk.gd.smouse = TRUE, mk.pdf=TRUE)
 }

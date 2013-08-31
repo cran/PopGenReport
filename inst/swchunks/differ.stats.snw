@@ -92,7 +92,7 @@ if (dim(pairGstNmat)[1]<13)   print(pairGstNtab,include.rownames=TRUE)  else
 
 <<echo=FALSE, results='hide'>>=
 if (length(levels(cats@pop))>2){
-allresults$HsHtdifferentiate<-list(HsHtdifferent=differentiate,pairwiseD=pairDmat, pairwiseGSTH=pairGstH, pairwiseGstN=pairGstN)
+allresults$differ.stats<-list(HsHt=differentiate,pairwise.D=pairDmat, pairwise.GstH=pairGstH, pairwise.GstN=pairGstN)
 }
 @
 

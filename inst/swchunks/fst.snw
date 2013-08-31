@@ -19,23 +19,14 @@ write.csv(FST_results, paste(cats@other$filename,"-Fst_by_loc.csv", sep=""), row
 print(tab_pop_Fst,include.rownames=TRUE,add.to.row=list(list(seq(1,nrow(FST_results),2)),"\\rowcolor[gray]{0.9} "))
 @
 
-<<echo=FALSE,results='hide'>>=
-fname.pop_locusFST<-paste(cats@other$filename,"-pop_locusFST.png",sep="")
-png(fname.pop_locusFST,res=300,width=1800,height=1200)
+<<pop_locus_fst, echo=FALSE, fig.width=6, fig.height=4, fig.path=fig.path, dev=dev, dpi=dpi, fig.cap="Fst across entire population at each locus. Solid line shows median Fst, dotted line shows mean Fst, dashed lines indicate 2.5th and 97.5th percentiles of Fst">>=
   barplot(FST_results$Fst, ylim=c(0,signif(max(FST_results$Fst),1)), names.arg=rownames(FST_results), las=3,ylab="Fst", cex.names=0.8)
   percentiles<-quantile(FST_results$Fst,probs=c(0.025,0.5,0.975))
   abline(a=percentiles[1],b=0,lty=2)
   abline(a=percentiles[2],b=0,lty=1)
   abline(a=percentiles[3],b=0,lty=2)
   abline(a=mean(FST_results$Fst),b=0,lty=3)
-dev.off() 
 @
-
-\begin{figure}[h]
-  \centerline{\includegraphics[width=6in,height=4in]{\Sexpr{fname.pop_locusFST}}}
-  \caption{Fst across entire population at each locus. Solid line shows median Fst, dotted line shows mean Fst, dashed lines indicate 2.5th and 97.5th percentiles of Fst}
-\end{figure}
-
 \FloatBarrier
 
 \section{Computation of Nei's pairwise Fst between all pairs of populations}
@@ -64,7 +55,7 @@ print(tab_pairwise_fst,include.rownames=TRUE, floating.environment='sidewaystabl
 @
 
 <<echo=FALSE, results='hide'>>=
-allresults$Fst<-list(FSTbyloci=FST_results, FSTpairwise=mat.fst)
+allresults$fst<-list(FSTbyloci=FST_results, FSTpairwise=mat.fst)
 @
 
 

@@ -92,6 +92,6 @@ if (dim(idx)[1]>0) {
 
 
 <<echo=FALSE, results='hide'>>=
-allresults$HWEresults<-list(HWEchisq=tabhw, departures=temp)
+allresults$hwe<-list(HWEchisq=tabhw, departures=temp)
 @
 \FloatBarrier

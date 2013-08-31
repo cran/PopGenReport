@@ -1,6 +1,6 @@
 
 #must provide a filename and if pop, ind and in 2 or two columns per allele
-read.genetable <- function(filename, pop=NULL, ind=NULL,lat=NULL, long=NULL, other.min=NULL, other.max=NULL,oneColPerAll, missing=NA,  sep=NULL, ncode=NULL  )
+read.genetable <- function(filename, pop=NULL, ind=NULL,lat=NULL, long=NULL, x=NULL, y=NULL, other.min=NULL, other.max=NULL,oneColPerAll, missing=NA,  sep=NULL, ncode=NULL ,ploidy=2 )
 {
 gfile <-read.csv(filename)
 
@@ -34,20 +34,34 @@ if (!is.null(popnr)) rem <- c(rem, popnr)
 if (!is.null(indnr)) rem <- c(rem, indnr)
 if (!is.null(lat))  rem <- c(rem, lat)
 if (!is.null(long)) rem <- c(rem, long)
+if (!is.null(x)) rem <- c(rem, x)
+if (!is.null(y)) rem <- c(rem, y)
+
 
 if (!is.null(rem)) genes <- gfile[, -c(rem)]   else genes <- gfile
 
 
-if (oneColPerAll==F)
+if (oneColPerAll==TRUE)
 {
 res <-data.frame(allele= rep(NA,dim(genes)[1]) )
 
-for (i in seq(1,dim(genes)[2]-1,2))
+for (i in seq(1,dim(genes)[2]-1,ploidy))
   {
-  res[,ceiling(i/2)] <- paste(genes[,i], genes[,i+1],sep="/")
+  dummy <-genes[,i]
+  for (ii in (i+1):(i+ploidy-1))
+  {
+  dummy<- paste(dummy,genes[,ii], sep="/")
   
-  colnames(res)[ceiling(i/2)] <- paste(LETTERS[ceiling(i/2)], colnames(genes)[i], colnames(genes)[i+1],sep="-" )
   }
+  
+  res[,ceiling(i/ploidy)] <-  dummy
+  
+ 
+  
+  if (ploidy==2)   colnames(res)[ceiling(i/2)] <- paste(LETTERS[ceiling(i/2)],                colnames(genes)[i], colnames(genes)[i + 1], sep = "-")  else
+   colnames(res)[ceiling(i/ploidy)] <- paste("Loc-",LETTERS[ceiling(i/ploidy)],sep="")
+  }
+  
   
 sep="/"
 
@@ -56,10 +70,14 @@ genes <- res
 
   
   
-  df <- df2genind(genes, pop=pops, ind.names=inds, missing=missing,     ncode=ncode,loc.names=colnames(genes), sep=sep)
+  df <- df2genind(genes, pop=pops, ind.names=inds, missing=missing,     ncode=ncode,loc.names=colnames(genes), sep=sep, ploidy=ploidy)
   
   if (!is.null(lat) & !is.null(long))
   df@other$latlong <- data.frame(lat=gfile[,lat], long=gfile[,long])
+  if (!is.null(x) & !is.null(y))
+  df@other$xy <- data.frame(x=gfile[,x], y=gfile[,y])
+  
+  
   if (!is.null(other.min) & !is.null(other.max)) 
   {
   df@other$data  <- data.frame(gfile[,c(other.min:other.max)])

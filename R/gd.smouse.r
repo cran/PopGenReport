@@ -20,6 +20,10 @@ gd.smouse <- function(population, verbose=TRUE){
   # create an empty list which will contain all pops 
   indsrmv<-c()
   popsgone<-c()
+  
+  # need to find the intervals for each loci...
+  cs <- cumsum(population@loc.nall) # this determines the end of each loci frame for each ind's genotype
+  cs.l <- c(1,cs[-length(cs)]+1) # this determine the beginning of each loci frame for each ind's genotype
 
   # check to see that the populations have more than one individual (probably need to make it more 
   # sophisticated later on e.g. check to see that at least one individual has loci values)
@@ -30,11 +34,24 @@ gd.smouse <- function(population, verbose=TRUE){
       indsrmv<-c(indsrmv, indrmv)
       popsgone<-c(popsgone,i)
     }
+    if(indcnt>=2){
+      popi<-which(indpop==poplist[i])
+      genos<-population@tab[popi,]
+      cntlow<-0
+      for (j in 1:maxloci){
+        totalleles<-sum(genos[,cs.l[j]:cs[j]],na.rm=TRUE)
+        if(totalleles<1) cntlow<-cntlow+1
+      }
+      if (cntlow>0) {
+        indsrmv<-c(indsrmv, popi)
+        popsgone<-c(popsgone, i)
+      }
+    }
   }
 
-  if(length(indsrmv)>0){
+  if(length(popsgone)>0){
     message("WARNING!!! The following populations were dropped due to insufficient numbers of individuals")
-    for (i in 1:length(indsrmv)){
+    for (i in 1:length(popsgone)){
         message(poplist[popsgone[[i]]])
     }
   }
@@ -57,8 +74,6 @@ gd.smouse <- function(population, verbose=TRUE){
   smoused<-matrix(NA,nrow=maxind,ncol=maxind)
 
 
-  cs <- cumsum(population@loc.nall) # this determines the end of each loci frame for each ind's genotype
-  cs.l <- c(1,cs[-length(cs)]+1) # this determine the beginning of each loci frame for each ind's genotype
 
   for (i in 1:numpops){   #numpops this is looping over pops
     for (j in i:numpops){ #numpops this is looping over pops
@@ -128,6 +143,7 @@ gd.smouse <- function(population, verbose=TRUE){
             if(k==l) smoused[pop2[l],pop1[k]]<-0
             if(k!=l){
               smoused[pop2[l],pop1[k]]<-sum(smoused.loci[l,k,])
+              smoused[pop1[k],pop2[l]]<-sum(smoused.loci[l,k,])
             }
           }
         }    
@@ -148,6 +164,7 @@ gd.smouse <- function(population, verbose=TRUE){
         for (k in 1:length(pop2)){
           for (l in 1:length(pop1)){
             smoused[pop2[k],pop1[l]]<-sum(smoused.loci[k,l,])
+            smoused[pop1[l],pop2[k]]<-sum(smoused.loci[k,l,])
           }
         }
       }
@@ -159,7 +176,7 @@ gd.smouse <- function(population, verbose=TRUE){
     colnames(smoused)<-population@ind.names[indsrmv]
     rownames(smoused)<-population@ind.names[indsrmv]
     # calculate geographical distance
-    geodist<-as.matrix(dist(population@other$utm[indsrmv,]))/1000
+    #geodist<-as.matrix(dist(population@other$utm[indsrmv,]))/1000
   } else if(is.null(indsrmv)){
     colnames(smoused)<-population@ind.names
     rownames(smoused)<-population@ind.names

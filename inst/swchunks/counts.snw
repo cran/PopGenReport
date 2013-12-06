@@ -52,7 +52,7 @@ brtab(numallelespop,"Number of alleles per population",c("population","# alleles
 @
 <<pop_sampsz_vs_alleles, echo=FALSE, fig.width=6, fig.height=4, fig.path=fig.path, dev=dev, dpi=dpi>>=
 plot(sumcats$pop.eff,sumcats$pop.nall,xlab="Location sample size",ylab="Number of alleles",main="Number of alleles vs location sample size",pch=19,ylim=c(0,round((5+max(sumcats$pop.nall)),digits=-1)))
-textxy(sumcats$pop.eff,sumcats$pop.nall,(names(sumcats$pop.eff)),cx=0.6)
+textxy(sumcats$pop.eff,sumcats$pop.nall,(names(sumcats$pop.eff)),cex=0.6)
 @
 \FloatBarrier
 \noindent

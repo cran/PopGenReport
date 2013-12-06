@@ -77,9 +77,11 @@ for (i in 1:numloci)
 \subsection{Private Alleles}
 <<echo=FALSE, results='hide'>>=
 pa<-freq_alleles$private.alleles
+noprivate.allel=TRUE
 tempcount<-0
 for(i in 1:length(pa)){
   if(!is.na(pa[[i]][1])){
+ noprivate.allel=FALSE
     if(tempcount==0){
       if(is.null(dim(pa[[i]]))){
         patemp<-cbind(unname(cats@loc.names)[i],as.matrix(t(pa[[i]])))
@@ -104,8 +106,16 @@ for(i in 1:length(pa)){
     tempcount<-tempcount+1
   }
 }
+if (noprivate.allel==TRUE)
+{
+privall <-  data.frame(Locus="-",Population="-", Allele="-")
+mat.priv.all <- data.frame(Population="-")
+} else
+{
 mat.priv.all<-as.matrix(t(table(privall[,2])))
+} 
 rownames(mat.priv.all)<-"Number of private alleles"
+
 @
 \FloatBarrier
 \subsubsection{All private alleles}

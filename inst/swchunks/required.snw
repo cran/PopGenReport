@@ -66,7 +66,7 @@ allresults<-list()
 
 
 #figure parameters....
-fig.path <- paste(cats@other$path,"/",cats@other$foldername,"/",cats@other$filename,"-",sep="")
+fig.path <- paste(cats@other$filename,"-",sep="")
 dev <- c('pdf', 'png','svg')
 dpi <- 300
 @

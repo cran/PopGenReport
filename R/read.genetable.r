@@ -57,16 +57,17 @@ for (i in seq(1,dim(genes)[2]-1,ploidy))
   res[,ceiling(i/ploidy)] <-  dummy
   
  
-  
-  if (ploidy==2)   colnames(res)[ceiling(i/2)] <- paste(LETTERS[ceiling(i/2)],                colnames(genes)[i], colnames(genes)[i + 1], sep = "-")  else
-   colnames(res)[ceiling(i/ploidy)] <- paste("Loc-",LETTERS[ceiling(i/ploidy)],sep="")
+
+    colnames(res)[ceiling(i/ploidy)] <-  colnames(genes)[i]
   }
-  
+
   
 sep="/"
 
 genes <- res
 } 
+
+
 
   
   

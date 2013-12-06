@@ -1,4 +1,4 @@
-ind,pop,lat,long,group,age,Allele1,Allele2,Allele3,Allele4,Allele5,Allele6
+ind,pop,lat,long,group,age,loci1,loci2,loci3,loci4,loci5,loci6
 T158,Black,-40.866417,145.283589,Female,juv,141/145,243/243,159/173,263/265,215/215,192/192
 T306,Black,-40.855888,145.276375,Male,Ad,145/145,243/243,159/159,265/267,219/219,192/194
 T305,Black,-40.878894,145.2885,Female,Ad,143/145,243/243,159/159,265/265,215/215,194/194

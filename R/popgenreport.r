@@ -67,10 +67,27 @@ popgenreport <- function(cats=NULL,
   
   #cut down length of loci names to  6  and make sure they are unique
   cats@loc.names <- substr(cats@loc.names,1,6)   
-  if (length(unique(cats@loc.names))!= length(cats@loc.names)) cats@loc.names <- paste(LETTERS[1:length(cats@loc.names)],"-",substr(cats@loc.names,1,4), sep="")
+  if (length(unique(cats@loc.names))!= length(cats@loc.names)) 
+  {cats@loc.names <- paste(1:length(cats@loc.names),"-",substr(cats@loc.names,1,4), sep="")
+  cat("Loci names were not unique and therefore adjusted.\n")
+  }
+
+#check if pop.names, ind.names are unique!!!!
+#adjust if necessary and issue a notification
+if (length(unique(cats@ind.names))!=length(cats@ind.names)) 
+  {cats@ind.names <- paste(1:length(cats@ind.names),"-",substr(cats@ind.names,1,8),sep="")
+  cat("Individual names were not unique and therefore adjusted.\n")
+  }
+
 
   
-  
+if (length(unique(cats@pop.names))!=length(cats@pop.names)) 
+  {
+  cats@pop.names <- paste(1:length(cats@pop.names),"-",substr(cats@pop.names,1,6),sep="")
+  cat("Subpopulation names were not unique and therefore adjusted.\n")
+  }
+
+ 
     #set directory where to save a file, defaults to tempdir (follow R policy)
   if (is.null(path.pgr)) 
   {
@@ -80,16 +97,16 @@ popgenreport <- function(cats=NULL,
   
 
   
-  
 #  setwd(path.pgr)
   
   #create a foldername folder if not existing...
   dirfiles <- list.dirs(path=path.pgr, recursive=FALSE)
   if (!(tolower (file.path(path.pgr,foldername))) %in% tolower(dirfiles)) {
     dir.create(file.path(path.pgr,foldername))
-    cat("There is no ",foldername, " folder. I am trying to create it; \notherwise please create the folder manually. \n",sep="")
+    cat("There is no ",foldername, " folder. I am trying to create it; \notherwise please create the folder manually. \n")
   }
-
+  owd <-getwd()
+  setwd(file.path(path.pgr, foldername))
   # conversion of lat longs to google map data (Mercator (dismo) wants to have long lat)
   
 
@@ -199,7 +216,8 @@ if (mk.differ.stats | mk.complete){
 
 if (mk.hwe | mk.complete){
   cat("- Test for Hardy-Weinberg-Equilibrium ...\n") 
-  cat("  !! You may get warnings when running HWE tests, if a locus has less than five alleles!! \n")
+  cat("  !! You may get warnings when running HWE tests, if the test is based\n")
+  cat(" on an entry in the chi-square table which is less than five.!! \n")
   popHWEll<-readLines(paste(path,"hwe.snw",sep=""))
   compl<-c(compl,popHWEll)
 }
@@ -253,26 +271,26 @@ close(zz)
 cat(paste("Analysing data ...\n", sep=""))
 #Sweave(paste(fname,".rnw",sep=""), output=paste(fname,".tex",sep=""), quiet=FALSE, driver=mydriver)
 flush.console()
-knit(input=file.path(path.pgr,foldername,rnwfile), output=file.path(path.pgr,foldername,texfile), quiet=TRUE, envir=pgr)
+knit(input=rnwfile, output=texfile, quiet=TRUE, envir=pgr)
 
 if (mk.pdf==TRUE)
 {
 cat(paste("Creating pdf from: ",rnwfile," ...\n",sep=""))
-knit2pdf(file.path(path.pgr,foldername,texfile),file.path(path.pgr,foldername, texfile))
+knit2pdf(texfile, texfile)
 cat(paste("Finished.\nCheck ",fname,".pdf for results.\n", sep=""))
 }
 
 if (mk.Rcode) {
   cat(paste("Creating R code from: ",rnwfile,"...\n"), sep="")
   rfile <-paste(fname,".R",sep="")
-  purl(input=file.path(path.pgr,foldername,rnwfile), output=file.path(path.pgr,foldername,rfile))
+  purl(input=rnwfile, output=rfile)
 #  Stangle(paste(fname,".rnw",sep=""))
 }
     
 
-cat(paste("All files are available in the folder: \n", paste(path.pgr,"/",foldername,"\n", sep="")))
+cat(paste("All files are available in the folder: \n",file.path(path.pgr, foldername),"\n",sep=""))
 
 #reset working directory to previous
-#setwd(current.dir)
+setwd(owd)
 return(pgr$allresults)
 }

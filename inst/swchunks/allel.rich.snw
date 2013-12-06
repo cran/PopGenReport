@@ -11,7 +11,7 @@ Allelic richness for each locus and subpopulation was based on a subsample of {\
 main_cap_first<-"Allelic richness by locus and population"
 ar_main_cap_cont<-"Allelic richness by locus and population (continued)"
 tab <- ar$all.richness
-breaktab(tab, cap_first, cap_cont)
+breaktab(tab, main_cap_first, ar_main_cap_cont)
 write.csv(ar$all.richness, paste(cats@other$filename,"-allelic_richness.csv", sep=""), row.names=TRUE)
 sum_ar<-rbind(ar$mean.richness,ar$sum.richness)
 rownames(sum_ar)<-c("Mean richness","Total richness")

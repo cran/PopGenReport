@@ -2,7 +2,8 @@
 \alias{gd.smouse}
 \title{Individual genetic distance calculation based on Smouse and Peakall 1999}
 \description{
-Calculate pairwise genetic distances between all individuals using the individual genetic distance measure of Smouse and Peakall (1999). This function should produce the same results as the individual genetic distances calculated using GenAlEx and choosing the interpolate missing data option. Note that depending on your computers capabilities, you may run into memory errors when this function is used on datasets with large numbers of individuals (>1000).
+Calculate pairwise genetic distances between all individuals using the individual genetic distance measure of Smouse and Peakall (1999). This function should produce the same results as the individual genetic distances calculated using GenAlEx and choosing the interpolate missing data option. Note that depending on your computers capabilities, you may run into memory errors when this function is used on datasets with large numbers of individuals (>1000). Additionally, the time for this function to run can be quite lengthy. Using a PC with a 3.5 GHz processor to calculate pairwise genetic distances between individuals with 36 diploid loci it took 2 seconds for 100 individuals, 51 seconds for 500 individuals, 200 seconds for 1000 individuals, 836 seconds (~14 minutes) for 2000 individuals, and 1793 seconds (~30 minutes) for 3000 individuals. 
+Please note that for each of your population groupings there must be at least one individual with genotyped alleles for each locus (it doesn't have to be the same individual for every locus). If a population doesn't meet this requirement, it will be dropped from the analysis and a warning message will be generated. 
 }
 \usage{
 gd.smouse(population, verbose = TRUE)

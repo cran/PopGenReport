@@ -1,0 +1,89 @@
+\newpage
+\section{Landscape Genetic Analysis using Partial Mantel tests}
+
+
+<<frictionmap, echo=FALSE, results='hide' ,fig.path=fig.path, dev=dev, dpi=dpi>>=
+
+glc<- genleastcost(cats, fr.raster, gen.dist)
+
+@
+
+\FloatBarrier
+\newpage
+\subsection{Pairwise Euclidean distances}
+
+<<echo=FALSE, results='hide'>>=
+cost.cap <- "Pairwise euclidean distances"
+  paireucltab<-xtable(glc$eucl.mat, cap=cost.cap, digits=0)
+  write.csv(glc$eucl.mat, paste(cats@other$filename,"-pairwise_euclidean.distance.csv", sep=""), row.names=TRUE)
+@  
+<<echo=FALSE,results='asis'>>=
+if (dim(glc$eucl.mat)[1]<8)   print( paireucltab,include.rownames=TRUE, add.to.row=list(list(seq(1,nrow(glc$eucl.mat),2)),"\\rowcolor[gray]{0.9} "))  else  print( paireucltab,include.rownames=TRUE, floating.environment='sidewaystable', scalebox=max(1-(dim(glc$eucl.mat)[1]-15)/50,0.2), add.to.row=list(list(seq(1,nrow(glc$eucl.mat),2)),"\\rowcolor[gray]{0.9} "))
+@
+
+\FloatBarrier
+\subsection{Pairwise cost distances}
+
+<<echo=FALSE, results='hide'>>=
+cost.cap <- "Pairwise cost distances"
+  paircosttab<-xtable(glc$cost.mat, cap=cost.cap, digits=0)
+  write.csv(glc$cost.mat, paste(cats@other$filename,"-pairwise_cost.distance.csv", sep=""), row.names=TRUE)
+@  
+<<echo=FALSE,results='asis'>>=
+if (dim(glc$cost.mat)[1]<8)   print( paircosttab,include.rownames=TRUE, add.to.row=list(list(seq(1,nrow(glc$cost.mat),2)),"\\rowcolor[gray]{0.9} "))  else  print( paircosttab,include.rownames=TRUE, floating.environment='sidewaystable', scalebox=max(1-(dim(glc$cost.mat)[1]-15)/50,0.2), add.to.row=list(list(seq(1,nrow(glc$cost.mat),2)),"\\rowcolor[gray]{0.9} "))
+@
+
+
+\FloatBarrier
+\subsection{Pairwise path lengths}
+
+<<echo=FALSE, results='hide'>>=
+cost.cap <- "Pairwise path lengths (based on cost distances)"
+  pairpathtab<-xtable(glc$pathlength.mat, cap=cost.cap, digits=0)
+  write.csv(glc$pathlength.mat, paste(cats@other$filename,"-pairwise_pathlengths.csv", sep=""), row.names=TRUE)
+@  
+<<echo=FALSE,results='asis'>>=
+if (dim(glc$pathlength.mat)[1]<8)   print( pairpathtab,include.rownames=TRUE, add.to.row=list(list(seq(1,nrow(glc$pathlength.mat),2)),"\\rowcolor[gray]{0.9} "))  else  print( pairpathtab,include.rownames=TRUE, floating.environment='sidewaystable', scalebox=max(1-(dim(glc$pathlength.mat)[1]-15)/50,0.2), add.to.row=list(list(seq(1,nrow(glc$pathlength.mat),2)),"\\rowcolor[gray]{0.9} "))
+@
+
+
+
+
+
+\FloatBarrier
+\subsection{Pairwise genetic distances (\Sexpr{gen.dist})}
+
+
+<<echo=FALSE,results='asis'>>=
+#write gendist.mat
+  pairdiff<-paste("Pairwise genetic distance (",gen.dist,")",sep="") 
+  pairgentab<-xtable(glc$gen.mat, cap=pairdiff, digits=3)
+  write.csv(glc$gen.mat, paste(cats@other$filename,"-pairwise_",gen.dist,".csv", sep=""), row.names=TRUE)
+
+if (dim(glc$gen.mat)[1]<8)   print( pairgentab,include.rownames=TRUE, add.to.row=list(list(seq(1,nrow(glc$gen.mat),2)),"\\rowcolor[gray]{0.9} "))  else  print( pairgentab,include.rownames=TRUE, floating.environment='sidewaystable', scalebox=max(1-(dim(glc$gen.mat)[1]-15)/50,0.2), add.to.row=list(list(seq(1,nrow(glc$gen.mat),2)),"\\rowcolor[gray]{0.9} "))
+@
+\FloatBarrier
+\subsection{Partial Mantel tests following the approach of Wassermann et al. 2010 }
+
+
+
+
+%\begin{figure}[h]
+%  \begin{center}
+%    \includegraphics{\Sexpr{fname.mantelplot}}
+%    \caption{Density plots for Mantel tests}
+%  \end{center}
+%\end{figure} 
+
+<<mantel, echo=FALSE, results='hide',  fig.width=7, fig.height=5, fig.path=fig.path, dev=dev, dpi=dpi>>=
+wman <- wassermann(gen.mat=glc$gen.mat, cost.mat=glc$cost.mat , eucl.mat=glc$eucl.mat)
+allresults$leastcost <-list(eucl.mat=glc$eucl.mat, cost.mat=glc$cost.mat,pathlength.mat= glc$pathlength.mat, gen.mat=glc$gen.mat, mantel.mat=wman$mantel.mat,  paths=glc$paths)
+cost.cap <- "Mantel tests following methodology of Wassermann et al. 2011"
+  manteltab<-xtable(wman$mantel.mat, cap=cost.cap, digits=3)
+  write.csv(wman$mantel.mat, paste(cats@other$filename,"-manteltests.csv", sep=""), row.names=TRUE)
+@
+<<echo=FALSE,results='asis'>>=
+print( manteltab,include.rownames=TRUE, add.to.row=list(list(seq(1,nrow(wman$mantel.mat),2)),"\\rowcolor[gray]{0.9} ")) 
+@
+
+

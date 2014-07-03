@@ -4,11 +4,11 @@
 Least-cost path analysis based on a friction matrix
 }
 \description{
-This function calculates the pairwise distances (Euclidean, Least cost path and genetic distances) of populations using a friction matrix and a spatial genind object.
-The genind object needs to have coordinates in the same projected coordinate system
+This function calculates the pairwise distances (Euclidean, cost path distances and genetic distances) of populations using a friction matrix and a spatial genind object.
+The genind object needs to have coordinates in the same projected coordinate system as the friction matrix. The friction matrix can be either a single raster of a stack of several layers. If a stack is provided the specified cost distance is calculated for each layer in the stack. The output of this function can be used with the functions \code{\link{wassermann}} or \code{\link{lgrMMRR}} to test for the significance of a layer on the genetic structure.
 }
 \usage{
-genleastcost(cats, fr.raster, gen.dist)
+genleastcost(cats, fr.raster, gen.dist, NN=4, pathtype="leastcost", plotpath=TRUE,theta=1)
 }
 \arguments{
   \item{cats}{a spatial genind object. see ?popgenreport how to provide coordinates in genind objects
@@ -16,29 +16,36 @@ genleastcost(cats, fr.raster, gen.dist)
   \item{fr.raster}{a friction matrix
 }
   \item{gen.dist}{specification which genetic distance method should be used to calculate pairwise genetic distances between population ( "D", "Gst.Nei", "Gst.Hedrick", "Smouse" or "Kosman")
-}
+}                  
+  \item{NN}{Number of neighbours used when calculating the cost distance (possible values 4,8 or 16). Default is 4} 
+  \item{pathtype}{Type of cost distance to be calculated (based on function in the \code{\link{gdistance}} package. Available distances are 'leastcost', 'commute' or 'rSPDistance'. See functions in the gdistance package for futher explanations. If the path type is set to 'leastcost' then paths and also pathlength are returned.}
+  \item{plotpath}{switch if least cost paths should be plotted (works only if pathtype='leastcost'. Be aware this slows down the computation, but it is recommended to do this to check least cost paths visually.}
+  \item{theta}{value needed for rSPDistance function. see \code{\link{rSPDistance}} in package \code{gdistance}.}
 }
 \details{
 to be written
 }
 \value{
-returns a list that consists of four pairwise distance matrixes (Euclidean, Cost, length of path and genetic) and the actual paths as spatial line objects
+returns a list that consists of four pairwise distance matrixes (Euclidean, Cost, length of path and genetic) and the actual paths as spatial line objects.
 }
 \references{
-Cushman et al.
-Landguth et al.
+Cushman, S., Wasserman, T., Landguth, E. and Shirk, A. (2013). Re-Evaluating Causal Modeling with Mantel Tests in Landscape Genetics. Diversity, 5(1), 51-72. 
+
+Landguth, E. L., Cushman, S. A., Schwartz, M. K., McKelvey, K. S., Murphy, M. and Luikart, G. (2010). Quantifying the lag time to detect barriers in landscape genetics. Molecular ecology, 4179-4191. 
+
+Wasserman, T. N., Cushman, S. A., Schwartz, M. K. and Wallin, D. O. (2010). Spatial scaling and multi-model inference in landscape genetics: Martes americana in northern  Idaho. Landscape Ecology, 25(10), 1601-1612.  
+
 }
 \author{
 Bernd Gruber
 }
 \seealso{
- \code{\link{landgenreport}}, \code{\link{popgenreport}}
+ \code{\link{landgenreport}}, \code{\link{popgenreport}}, \code{\link{wassermann}}, \code{\link{lgrMMRR}}
 }
 \examples{
-##Not: run
-# require(raster)
-# data(landgen)
-# data(fric.raster)
-# glc <- genleastcost(landgen, fric.raster, "D")
-# wassermann(eucl.mat = glc$eucl.mat, cost.mat = glc$cost.mat, gen.mat = glc$gen.mat)
+\dontrun{%
+glc <- genleastcost(cats=landgen, fric.raster, "D")
+wassermann(eucl.mat = glc$eucl.mat, cost.mat = glc$cost.mats, gen.mat = glc$gen.mat)
+lgrMMRR(gen.mat = glc$gen.mat, cost.mats = glc$cost.mats, eucl.mat = glc$eucl.mat)
+}
 }

@@ -14,7 +14,7 @@ popgenreport(bilby, mk.complete=T, path.pgr="d:/temp", fname="PopGenReport_bilby
 
 #create the map on the tiger occurrences....
 
-tiger.gen <- read.genetable( paste(.libPaths()[1],"/PopGenReport/extdata/tiger.csv",                            sep="" ), ind=1, pop=2, other.min=3, other.max=6, oneColPerAll=TRUE)
+tiger.gen <- read.genetable( paste(.libPaths()[1],"/PopGenReport/extdata/tiger.csv",sep="" ), ind=1, pop=2, other.min=3, other.max=6, oneColPerAll=TRUE)
 
 
 require(rgdal) #load package
@@ -29,3 +29,14 @@ popgenreport(tiger.gen, mk.map=TRUE,mk.counts=FALSE,
              mapdotcolor="orange", mapdotsize=as.numeric(tiger.gen@other$data$sex), 
              maptype="roadmap", mapdotalpha=0.9,mk.pdf=F, path.pgr="d:/temp", fname="tiger")
 
+
+#create landgenreport_example.pdf
+results1 <-landgenreport(landgen, fric.raster, "D",  path.pgr="d:/temp", fname="landgenreport_example")
+
+
+#### create platy map
+platyfile <-  system.file("extdata/platypus1c.csv",package="PopGenReport")
+platy.gen <- read.genetable(platyfile, ind=1, pop=2, lat=3, long=4, other.min=5,
+                            other.max=6, oneColPerAll=FALSE, sep="/", ploidy=2)
+popgenreport(platy.gen, mk.map=TRUE,mk.counts=FALSE, mapdotcolor="red", 
+             maptype="roadmap",mk.pdf=F, path.pgr="d:/temp", fname="platy")

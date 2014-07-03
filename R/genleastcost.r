@@ -1,13 +1,6 @@
 #leatcost function
-genleastcost <- function(cats, fr.raster, gen.dist)
+genleastcost <- function(cats, fr.raster, gen.dist, NN=4, pathtype="leastcost", plotpath=TRUE, theta=1)
 {
-#create friction matrix
- fric.mat <- transition(fr.raster,function(x) 1/x[2],4)
-# fric.mat <- transition(fr.raster,function(x) 1/(abs(x[1]-x[2])),8)
-#set distances to meters
-fric.mat@crs@projargs<- "+proj=merc +units=m"
-fric.mat.cor <- geoCorrection(fric.mat)
-
 dist.type<-NA
 if (gen.dist=="D" || gen.dist=="Gst.Hedrick" || gen.dist=="Gst.Nei") dist.type<- "pop" else dist.type<-"ind" 
 
@@ -23,7 +16,44 @@ cp<-cbind(c.x, c.y)
 cp <- cbind(cats@other$xy[,1], cats@other$xy[,2])
 }
 
-plot(fr.raster)
+
+eucl.mat <- round(as.matrix(dist(cp)),3)
+
+if (dist.type=="pop") 
+{
+
+  dimnames(eucl.mat) <- list(cats@pop.names, cats@pop.names) 
+  npop <- length(levels(cats@pop))
+} else
+  
+{
+  dimnames(eucl.mat) <- list(cats@ind.names, cats@ind.names) 
+  npop <- length(cats@ind.names)
+}
+
+
+
+
+
+#check if fr.raster is a stack or not...
+mats <- list()
+mats.names<- NA
+mats.pathlength<- list()
+mats.paths<- list()
+
+pathlength.mat <- NULL
+paths <- NULL
+
+
+
+n.mats <- dim(fr.raster)[3] #number of rasters in the stack
+
+
+
+for (ci in 1:n.mats)
+{
+
+plot(fr.raster[[ci]], main=paste(names(fr.raster)[ci],":",pathtype,", NN=",NN,sep=""))
  #image(fr.raster, col=fr.raster@legend@colortable, asp=1)
 
  mapcolor <-   col2rgb(cats@other$mapdotcolor)/255
@@ -31,34 +61,52 @@ plot(fr.raster)
  points(cats@other$xy,cex=cats@other$mapdotsize, pch= cats@other$mapdottype, col=colX)
 if (dist.type=="pop")  points(cp,cex=cats@other$mapdotsize*1.5 , pch= 16, col=rgb(1,0.7,0,0.7))
 
-eucl.mat <- round(as.matrix(dist(cp)),3)
-cd.mat <-costDistance(fric.mat.cor, cp, cp)
 
-if (dist.type=="pop") 
-{
-  dimnames(cd.mat) <- list(cats@pop.names, cats@pop.names) 
-  dimnames(eucl.mat) <- list(cats@pop.names, cats@pop.names) 
-  npop <- length(levels(cats@pop))
-} else
-  
-{
-  dimnames(cd.mat) <- list(cats@ind.names, cats@ind.names) 
-  dimnames(eucl.mat) <- list(cats@ind.names, cats@ind.names) 
-  npop <- length(cats@ind.names)
-}
+#create friction matrix
+fric.mat <- transition(fr.raster[[ci]],function(x) 1/x[2],NN)
 
+# fric.mat <- transition(fr.raster,function(x) 1/(abs(x[1]-x[2])),8)
+#set distances to meters  if no projected already
+fric.mat@crs@projargs<- "+proj=merc +units=m"
+fric.mat.cor <- geoCorrection(fric.mat)
+
+
+if (pathtype=="leastcost") cd.mat <-costDistance(fric.mat.cor, cp, cp)
+
+if (pathtype=="rSPDistance") cd.mat <- rSPDistance(fric.mat.cor, cp, cp, theta=1)
+
+if (pathtype=="commute") cd.mat <-as.matrix(commuteDistance(fric.mat.cor, cp))
+
+
+  dimnames(cd.mat) <- dimnames(eucl.mat) 
+
+
+
+
+if (pathtype=="leastcost" & plotpath==TRUE)   #only show paths if leastcost otherwise not possible
+{
 comb <- t(combn(1:npop,2))
+
 
 #pathlength matrix
 pathlength.mat <- cd.mat
 pathlength.mat[,] <- 0
+paths<- list()
 
-
-paths <- list()
 cols <- rainbow(dim(comb)[1], alpha=0.5)
 for (i in 1:dim(comb)[1])
 {
+
+if (dist(rbind(cp[comb[i,1],], cp[comb[i,2],]))==0)
+{
+ ll <- Line(rbind( cp[comb[i,1],], cp[comb[i,2],]))
+ S1 <- Lines(list(ll),ID="Null")
+ sPath <- SpatialLines(list(S1))
+} else 
+{
 sPath <- shortestPath(fric.mat.cor, cp[comb[i,1],], cp[comb[i,2],], output="SpatialLines")
+}
+
 lines(sPath, lwd=1.5, col=cols[i])
 paths[[i]] <- sPath
 ll <-  round(SpatialLinesLengths(sPath),3)
@@ -66,8 +114,21 @@ pathlength.mat[comb[i,1],comb[i,2]] <- ll
 pathlength.mat[comb[i,2],comb[i,1]] <- ll
 }
 
+}
+
+mats[[ci]] <- cd.mat
+mats.names[[ci]] <- names(fr.raster)[ci]
+mats.pathlength[[ci]] <- pathlength.mat
+mats.paths[[ci]] <- paths
 
 
+
+} #end of ci loop
+
+#mats[[n.mats+1]] <- eucl.mat
+#mats.names[n.mats+1]<- "Euclidean"
+#
+names(mats)  <- names(fr.raster)
 #put other calculations here....
 # Calculate genetic distances across subpopulations
 
@@ -93,19 +154,10 @@ if (gen.dist=="Kosman")
 gendist.mat <-as.matrix(as.dist(gd.kosman(cats)$geneticdist))
 }
 
-if (dist.type=="pop") 
-{
-  colnames(gendist.mat)<-cats@pop.names
-  rownames(gendist.mat)<-cats@pop.names
-} else 
-{
-  colnames(gendist.mat)<-cats@ind.names
-  rownames(gendist.mat)<-cats@ind.names
+  dimnames(gendist.mat)<-dimnames(eucl.mat)
+
+
+return(list( gen.mat=gendist.mat, eucl.mat=eucl.mat,cost.matnames=mats.names, cost.mats=mats,pathlength.mats= mats.pathlength,  paths=mats.paths))
 }
 
 
-return(list(eucl.mat=eucl.mat, cost.mat=cd.mat,pathlength.mat= pathlength.mat, gen.mat=gendist.mat,  paths=paths))
-
-
-
-}

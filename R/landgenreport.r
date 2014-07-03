@@ -1,5 +1,12 @@
-landgenreport <- function(cats=NULL,
-                          
+landgenreport <- function(cats,
+                          fric.raster,  #friction matrix   
+                          gen.distance = "Gst.Nei",  #Gst Hedrick, Gst_Nei, smouse, kosman, D, %allels shared 
+                          NN=4, 
+                          pathtype="leastcost",
+                          plotpath=TRUE, 
+                          theta=1, #for randomSP distance
+                          mk.resistance=TRUE,    #mantel tests 
+                        
                             mapdotcolor ="blue",
                             mapdotsize=1,
                             mapdotalpha=0.4,
@@ -7,10 +14,9 @@ landgenreport <- function(cats=NULL,
                             mapzoom=NULL,                          
 # "roadmap","mobile","satellite","terrain","hybrid","mapmaker-roadmap","mapmaker-hybrid"
 
-                          mk.pmantel=FALSE,    #mantel tests 
-                          fric.raster = NULL,  #friction matrix   
-                          gen.distance = "Gst.Nei",  #Gst Hedrick, Gst_Nei, smouse, kosman, %allels shared 
+                          
                           mk.custom = FALSE,
+                          
 
                           fname="LandGenReport",
                           foldername="results",
@@ -140,12 +146,17 @@ if (is.null(path)) {cat("Could not find snw files in the PopGenReport library fo
   cat("Compiling report...\n")
   if (coords==FALSE) cat(" - No valid coordinates were provided. \n   Be aware you need to provide a coordinate (or NA) for each individual\n   and the coordinate heading in slot @other has to be 'latlong' or 'xy'.\n   All analyses will be skipped!\n") 
  
-if ((mk.pmantel | mk.complete)  & (coords & !is.null(fric.raster))) 
+if ((mk.resistance==TRUE | mk.complete==TRUE)  & (coords & !is.null(fric.raster))) 
   {
-    cat("- Partial mantel test using friction matrix...\n")  
+    cat("- Landscape genetic analysis using resistance matrices...\n")  
  #   fr.raster<<-fric.raster
     assign("gen.dist",gen.distance,envir=pgr)
     assign("fr.raster",fric.raster,envir=pgr)
+    assign("NN",NN,envir=pgr)
+    assign("pathtype",pathtype,envir=pgr)
+    assign("theta",theta,envir=pgr)
+    assign("plotpath",plotpath,envir=pgr)
+    
  #   gen.dist <<- gen.distance
     pmantel<-  readLines(paste(path,"pmantel.snw",sep=""))
     compl<-c(compl,pmantel)

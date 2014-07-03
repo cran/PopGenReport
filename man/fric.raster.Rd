@@ -12,6 +12,7 @@ This data set is used to demonstrate the use of the \code{\link{landgenreport}} 
  \code{\link{landgenreport}}, \code{\link{genleastcost}}
 }
 \examples{
+require(raster)
 data(fric.raster)
 plot(fric.raster)
 }

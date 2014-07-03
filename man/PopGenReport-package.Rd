@@ -10,10 +10,10 @@ This package aims to deliver a standardised framework for analysing population g
 }
 \details{
 \tabular{ll}{
-Package: \tab PopGenReport - Santa version\cr
+Package: \tab PopGenReport\cr
 Type: \tab Package\cr
-Version: \tab 1.8\cr
-Date: \tab 2014-02-24\cr
+Version: \tab 2.0\cr
+Date: \tab 2014-07-03\cr
 License: \tab GPL\cr
 }
 The package provides a framework to analyse population genetic data. The main intention is to make the capabilities, which are already there, available to a wider community. Several standard routines are already implemented. We invite other developers and researchers to either recommend new extensions or analyses and to provide additional code that could be included within the existing framework which has a very modular format. The long term aim is to have a widely used standard package that serves as a first step in analyzing population genetic data and to facilitate comparability between studies.

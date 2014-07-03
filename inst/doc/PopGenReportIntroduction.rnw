@@ -15,11 +15,12 @@
 ip <- installed.packages()
 ver <- ip[which(ip[,1]=="PopGenReport"),"Version"]
 require(xtable)
+require(adegenet)
 @
 <<c1b,echo=FALSE, results='asis'>>=
 cat(paste("\\subtitle {using PopGenReport Ver.",ver,"}\n"))
 @
-\author{Gruber \& Adamack (2013)}
+\author{Gruber \& Adamack (2014)}
 \maketitle
 %\tableofcontents
 \newpage

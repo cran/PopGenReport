@@ -11,15 +11,25 @@ Once all three type of input are provided with the necessary input, a landscape 
 
 }
 \usage{
-landgenreport(cats = NULL, mapdotcolor = "blue", mapdotsize = 1, mapdotalpha = 0.4,
-mapdottype = 19, mapzoom = NULL, mk.pmantel = FALSE, fric.raster = NULL, 
-gen.distance = "Gst.Nei", mk.custom = FALSE, fname = "LandGenReport", foldername = 
-"results", path.pgr = NULL, mk.Rcode = FALSE, mk.complete = FALSE, mk.pdf = TRUE)
+landgenreport(cats, fric.raster, gen.distance = "Gst.Nei", NN=4,
+pathtype="leastcost", plotpath=TRUE, theta=1, mk.resistance = TRUE , 
+mapdotcolor = "blue", mapdotsize=1, mapdotalpha = 0.4, mapdottype = 19, 
+mapzoom = NULL,mk.custom = FALSE, fname = "LandGenReport", foldername = "results",
+path.pgr = NULL, mk.Rcode = FALSE, mk.complete = FALSE, mk.pdf = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{cats}{ a \code{genind} object with spatial coordinates in the other slot
-
+}
+  \item{fric.raster}{ friction (resistance) raster, that specifies the landscape where the analysis should be computed on. If fric.raser is a stack a cost distances are calculated for each layer in the stack.
+}
+  \item{gen.distance}{type of genetic distance that should be used. Depending on the genetic distance meassurement this is done on a subpopulation basis (D, Gst.Hedrick, Gst.Nei=Fst) or on an individual basis (Kosman, Smouse).  
+}
+  \item{NN}{Number of neighbours used when calculating the cost distance (possible values 4,8 or 16). Default is 4} 
+  \item{pathtype}{Type of cost distance to be calculated (based on function in the \code{\link{gdistance}} package. Available distances are 'leastcost', 'commute' or 'rSPDistance'. See functions in the gdistance package for futher explanations.} 
+  \item{plotpath}{switch if least cost paths should be plotted (works only if pathtype='leastcost'. Be aware this slows down the computation, but it is recommended to do this to check least cost paths visually.}
+  \item{theta}{value needed for rSPDistance function. see \code{\link{rSPDistance}} in package \code{gdistance}.}
+  \item{mk.resistance}{ switch to do the landscape genetic analysis based on resistance matrices, should be set to TRUE
 }
   \item{mapdotcolor}{ see \code{\link{popgenreport}}
 }
@@ -32,12 +42,7 @@ see\code{\link{popgenreport}}
 }
   \item{mapzoom}{ see \code{\link{popgenreport}}
 }
-  \item{mk.pmantel}{ switch to do the analysis, should be set to TRUE
-}
-  \item{fric.raster}{ friction raster, that specifies the landscape where the analysis should be computed on
-}
-  \item{gen.distance}{type of genetic distance that should be used. Depending on the genetic distance meassurement this is done on a subpopulation basis (D, Gst.Hedrick, Gst.Nei=Fst) or on an individual basis (Kosman, Smouse).
-}
+
   \item{mk.custom}{ switch to add a customised part to the landgenreport
 }
   \item{fname}{ see \code{\link{popgenreport}}
@@ -57,12 +62,14 @@ see\code{\link{popgenreport}}
 Check the help pages of \code{\link{popgenreport}} how to include coordinates to a genind object. The coordinates need to be projected. Latlongs are not valid, because Euclidean distances are calcuated based on these coordinates. For an example how to convert latlongs into a projected format have a look at the vignette that comes with this package. The friction needs to be a raster and needs to be in the same projection as the genind object. Also the type of genetic distance to be used needs to be specified.
 }
 \value{
-For distance matrices are returned. Pairwise Euclidean distances between subpopulations/individuals, cost distances, path lengths and genetic distances. Also following the approach of Wassermann et al. 2010 a series of partial mantel tests are performed.
+Four distance matrices are returned. Pairwise Euclidean distances between subpopulations/individuals, cost distances, path lengths and genetic distances. Also following the approach of Wassermann et al. 2010 a series of partial mantel tests are performed. A multiple regression analysis based on Wang 2013 and Legendre 1994 is returned.The actual least-cost paths can be found under paths
 }
 \references{
 Cushman, S., Wasserman, T., Landguth, E. and Shirk, A. (2013). Re-Evaluating Causal Modeling with Mantel Tests in Landscape Genetics. Diversity, 5(1), 51-72. 
 
 Landguth, E. L., Cushman, S. A., Schwartz, M. K., McKelvey, K. S., Murphy, M. and Luikart, G. (2010). Quantifying the lag time to detect barriers in landscape genetics. Molecular ecology, 4179-4191. 
+
+Wang,I 2013. Examining the full effects of landscape heterogeneity on spatial genetic variation: a multiple matrix regression approach for quantifying geographic and ecological isolation. Evolution: 67-12: 3403-3411.
 
 Wasserman, T. N., Cushman, S. A., Schwartz, M. K. and Wallin, D. O. (2010). Spatial scaling and multi-model inference in landscape genetics: Martes americana in northern  Idaho. Landscape Ecology, 25(10), 1601-1612.  
 }
@@ -73,12 +80,11 @@ Bernd Gruber (bernd.gruber@canberra.edu.au)
 
 \seealso{
   \code{\link{popgenreport}}, \code{\link{wassermann}},
-  \code{\link{genleastcost}}
+  \code{\link{genleastcost}}, \code{\link{lgrMMRR}}
 }
 \examples{
-##Not: run
-# require(raster)
-# data(landgen)
-# data(fric.raster)
-# landgenreport(landgen, fric.raster, gen.distance="D", mk.mantel=T)
+\dontrun{%
+lc<-landgenreport(cats=landgen, fric.raster=fric.raster, gen.distance="D", mk.resistance=TRUE)
+names(lc$leastcost)
+}
 }

@@ -18,6 +18,7 @@ suppressPackageStartupMessages(require(gdistance))
 suppressPackageStartupMessages(require(vegan))
 suppressPackageStartupMessages(require(sp))
 suppressPackageStartupMessages(require(ggplot2))
+suppressPackageStartupMessages(require(raster))
 options(width = 80)
 
 #global functions and parameters....

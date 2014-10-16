@@ -1,9 +1,21 @@
 #leatcost function
-genleastcost <- function(cats, fr.raster, gen.dist, NN=4, pathtype="leastcost", plotpath=TRUE, theta=1)
+genleastcost <- function(cats, fr.raster, gen.dist, NN=NULL, pathtype="leastcost", plotpath=TRUE, theta=1)
 {
+  if (is.null(NN) & pathtype=="leastcost") 
+  {
+    cat("NN is not specified!\nPlease specify the number of nearest neighbour to use for the least-cost path calculations (NN=4 or NN=8). If linear features are tested you may want to consider NN=4 otherwise NN=8 is the most commonly used and prefered option. In any case check the actual least-cost paths for artefacts by inspecting the plot on least-cost paths.\n")
+    return()
+  }
+  
 dist.type<-NA
-if (gen.dist=="D" || gen.dist=="Gst.Hedrick" || gen.dist=="Gst.Nei") dist.type<- "pop" else dist.type<-"ind" 
+if (gen.dist=="D" || gen.dist=="Gst.Hedrick" || gen.dist=="Gst.Nei") dist.type<- "pop" 
 
+if (gen.dist=="Kosman" || gen.dist=="Smouse" || gen.dist=="propShared") dist.type<- "ind" 
+
+if (is.na(dist.type)) 
+  {cat("No valid genetic distance type was provided. Please check ?landgenreport for valid options\n")
+   return(-1)
+}
 
 if (dist.type=="pop")
 {
@@ -57,9 +69,11 @@ plot(fr.raster[[ci]], main=paste(names(fr.raster)[ci],":",pathtype,", NN=",NN,se
  #image(fr.raster, col=fr.raster@legend@colortable, asp=1)
 
  mapcolor <-   col2rgb(cats@other$mapdotcolor)/255
+ if (is.null(mapcolor)) colX= rgb(0,0,1,0.8) else 
  colX = rgb(mapcolor[1,],mapcolor[2,], mapcolor[3,],cats@other$mapdotalpha)
- points(cats@other$xy,cex=cats@other$mapdotsize, pch= cats@other$mapdottype, col=colX)
-if (dist.type=="pop")  points(cp,cex=cats@other$mapdotsize*1.5 , pch= 16, col=rgb(1,0.7,0,0.7))
+points(cats@other$xy,cex=1, pch=16, col="blue")
+# points(cats@other$xy,cex=cats@other$mapdotsize, pch= cats@other$mapdottype, col=colX)
+if (dist.type=="pop")  points(cp,cex=cats@other$mapdotsize*1.5 , pch= 16, col="black")
 
 
 #create friction matrix
@@ -152,6 +166,10 @@ gendist.mat <- as.matrix(gd.smouse(cats,verbose=FALSE))
 if (gen.dist=="Kosman")
 {
 gendist.mat <-as.matrix(as.dist(gd.kosman(cats)$geneticdist))
+}
+if (gen.dist=="propShared")
+{
+  gendist.mat <-as.matrix(as.dist(propShared(cats)))
 }
 
   dimnames(gendist.mat)<-dimnames(eucl.mat)

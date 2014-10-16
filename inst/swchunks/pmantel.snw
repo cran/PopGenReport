@@ -75,6 +75,20 @@ if (dim(p)[1]<8)   print( pairpathtab,include.rownames=TRUE, add.to.row=list(lis
 
 if (dim(glc$gen.mat)[1]<8)   print( pairgentab,include.rownames=TRUE, add.to.row=list(list(seq(1,nrow(glc$gen.mat),2)),"\\rowcolor[gray]{0.9} "))  else  print( pairgentab,include.rownames=TRUE, floating.environment='sidewaystable', scalebox=max(1-(dim(glc$gen.mat)[1]-15)/50,0.2), add.to.row=list(list(seq(1,nrow(glc$gen.mat),2)),"\\rowcolor[gray]{0.9} "))
 @
+
+\FloatBarrier
+\subsection{Pairwise plots of distance matrices}
+<<pairs, echo=FALSE, results='hide',  fig.width=7, fig.height=7, fig.path=fig.path, dev=dev, dpi=dpi>>=
+
+
+cm <-lapply(glc$cost.mats, as.numeric)
+dmats<-data.frame(eucl=as.numeric(glc$eucl.mat), gendist =as.numeric(glc$gen.mat), cm)
+ggpairs(dmats, lower = list(continuous = "smooth"), diag=list(continuous = "density"), upper = list(continuous = "smooth"), axisLabels='show')
+
+
+@
+
+
 \FloatBarrier
 \subsection{Partial Mantel tests following the approach of Wassermann et al. 2010 }
 

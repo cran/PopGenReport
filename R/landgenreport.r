@@ -1,7 +1,7 @@
 landgenreport <- function(cats,
                           fric.raster,  #friction matrix   
                           gen.distance = "Gst.Nei",  #Gst Hedrick, Gst_Nei, smouse, kosman, D, %allels shared 
-                          NN=4, 
+                          NN=NULL, 
                           pathtype="leastcost",
                           plotpath=TRUE, 
                           theta=1, #for randomSP distance
@@ -73,6 +73,14 @@ if (length(unique(cats@pop.names))!=length(cats@pop.names))
   cat("Subpopulation names were not unique and therefore adjusted.\n")
   }
 
+
+if (is.null(NN) & pathtype=="leastcost") 
+{
+  cat("NN is not specified!\nPlease specify the number of nearest neighbour to use for the least-cost path calculations (NN=4 or NN=8). If linear features are tested you may want to consider NN=4 otherwise NN=8 is the most commonly used and prefered option. In any case check the actual least-cost paths for artefacts by inspecting the plot on least-cost paths.\n")
+  return()
+}
+
+
  
 #set directory where to save a file, defaults to tempdir (follow R policy)
   if (is.null(path.pgr)) 
@@ -113,7 +121,7 @@ if (length(unique(cats@pop.names))!=length(cats@pop.names))
   
 ###################################
 ##### create a new environment to run knitr in it
- pgr <- new.env(parent=.GlobalEnv)
+ pgr <- new.env()
  assign("cats",cats,envir=pgr)
 
 

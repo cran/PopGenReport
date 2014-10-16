@@ -140,7 +140,8 @@ if (length(unique(cats@pop.names))!=length(cats@pop.names))
   
 ###################################
 ##### create a new environment to run knitr in it
- pgr <- new.env(parent=.GlobalEnv)
+ #pgr <- new.env(parent=.GlobalEnv)
+ pgr <- new.env()
  assign("cats",cats,envir=pgr)
 ###################################
 

@@ -7,11 +7,9 @@ Create a landscape genetic report
 \description{
 This function is the landscape genetic version of the \code{\link{popgenreport}} function. It needs to be provided with a genind object with spatial coordinates, a friction map (raster) and a specification which type of genetic distance should be used.  
 Once all three type of input are provided with the necessary input, a landscape genetic analysis using least cost path analysis is computed (see Cushman et al. 2010, Landguth et al. 2010). Depending on the genetic distance meassurement this is done on a subpopulation basis (D, Gst.Hedrick, Gst.Nei=Fst) or on an individual basis (Kosman, Smouse).
-
-
 }
 \usage{
-landgenreport(cats, fric.raster, gen.distance = "Gst.Nei", NN=4,
+landgenreport(cats, fric.raster, gen.distance = "Gst.Nei", NN=NULL,
 pathtype="leastcost", plotpath=TRUE, theta=1, mk.resistance = TRUE , 
 mapdotcolor = "blue", mapdotsize=1, mapdotalpha = 0.4, mapdottype = 19, 
 mapzoom = NULL,mk.custom = FALSE, fname = "LandGenReport", foldername = "results",
@@ -23,11 +21,10 @@ path.pgr = NULL, mk.Rcode = FALSE, mk.complete = FALSE, mk.pdf = TRUE)
 }
   \item{fric.raster}{ friction (resistance) raster, that specifies the landscape where the analysis should be computed on. If fric.raser is a stack a cost distances are calculated for each layer in the stack.
 }
-  \item{gen.distance}{type of genetic distance that should be used. Depending on the genetic distance meassurement this is done on a subpopulation basis (D, Gst.Hedrick, Gst.Nei=Fst) or on an individual basis (Kosman, Smouse).  
-}
-  \item{NN}{Number of neighbours used when calculating the cost distance (possible values 4,8 or 16). Default is 4} 
+  \item{gen.distance}{type of genetic distance that should be used. Depending on the genetic distance meassurement this is done on a subpopulation basis (D, Gst.Hedrick, Gst.Nei=Fst) or on an individual basis (Kosman, Smouse, propShared). propShared is the proportion of shared alleles between individuals.}
+  \item{NN}{Number of neighbours used when calculating the cost distance (possible values 4,8 or 16). As the default is NULL a value has to be provided if pathtype is 'leastcost'. NN=8 is most commonly used as it avoids a directional bias, but be aware that linear structures may cause artefacts in the least-cost paths in the NN=8 case, therefore we strongly recommend to inspect the actual least-cost paths in the provided output.} 
   \item{pathtype}{Type of cost distance to be calculated (based on function in the \code{\link{gdistance}} package. Available distances are 'leastcost', 'commute' or 'rSPDistance'. See functions in the gdistance package for futher explanations.} 
-  \item{plotpath}{switch if least cost paths should be plotted (works only if pathtype='leastcost'. Be aware this slows down the computation, but it is recommended to do this to check least cost paths visually.}
+  \item{plotpath}{switch if least cost paths should be plotted (works only if pathtype='leastcost'. Be aware this slows down the computation, but it is recommended to check least cost paths visually.}
   \item{theta}{value needed for rSPDistance function. see \code{\link{rSPDistance}} in package \code{gdistance}.}
   \item{mk.resistance}{ switch to do the landscape genetic analysis based on resistance matrices, should be set to TRUE
 }
@@ -84,7 +81,7 @@ Bernd Gruber (bernd.gruber@canberra.edu.au)
 }
 \examples{
 \dontrun{%
-lc<-landgenreport(cats=landgen, fric.raster=fric.raster, gen.distance="D", mk.resistance=TRUE)
+lc<-landgenreport(cats=landgen, fric.raster=fric.raster, gen.distance="D", NN=4, mk.resistance=TRUE)
 names(lc$leastcost)
 }
 }

@@ -19,6 +19,7 @@ suppressPackageStartupMessages(require(vegan))
 suppressPackageStartupMessages(require(sp))
 suppressPackageStartupMessages(require(ggplot2))
 suppressPackageStartupMessages(require(raster))
+suppressPackageStartupMessages(require(GGally))
 options(width = 80)
 
 #global functions and parameters....

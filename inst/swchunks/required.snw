@@ -67,7 +67,7 @@ for(i in 1:num_tables){
 
 #initial calculations
 sumcats<-summary(cats)
-samplocnum<-sumcats$pop.eff
+samplocnum<-sumcats$n.by.pop
 filename<-cats@other$filename
 allresults<-list()
 

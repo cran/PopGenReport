@@ -1,12 +1,15 @@
 Package: PopGenReport
 Type: Package
 Title: A Simple Framework to Analyse Population Genetic Data
-Version: 2.2
-Date: 2015-06-24
+Version: 2.2.2
+Date: 2016-05-9
 Authors@R: c(
   person("Bernd", "Gruber", email="bernd.gruber@canberra.edu.au", role=c("aut","cre")),
   person("Aaron", "Adamack", email="aaron.adamack@canberra.edu.au", role="aut"))
-Description: Provides beginner friendly framework to analyse population genetic data. It uses 'knitr' to create comprehensive reports on spatial genetic data. For detailed information how to use the package refer to the comprehensive tutorials or visit www.popgenreport.org.
+Description: Provides beginner friendly framework to analyse population genetic
+    data. It uses 'knitr' to create comprehensive reports on spatial genetic data.
+    For detailed information how to use the package refer to the comprehensive
+    tutorials or visit www.popgenreport.org.
 License: GPL
 LazyData: true
 Depends: R (>= 3.0.0), knitr, adegenet (>= 2.0.0), raster
@@ -17,10 +20,11 @@ Imports: lattice, RgoogleMaps, gap, calibrate, xtable, plyr, dismo,
 VignetteBuilder: knitr
 URL: https://github.com/green-striped-gecko/PopGenReport
 Suggests:
+RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2015-07-08 15:02:03 UTC; s425824
+Packaged: 2016-05-11 01:37:12 UTC; s425824
 Author: Bernd Gruber [aut, cre],
   Aaron Adamack [aut]
 Maintainer: Bernd Gruber <bernd.gruber@canberra.edu.au>
 Repository: CRAN
-Date/Publication: 2015-07-08 17:44:26
+Date/Publication: 2016-05-11 12:06:20

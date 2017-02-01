@@ -1,3 +1,99 @@
+#' Create a landscape genetic report
+#' 
+#' This function is the landscape genetic version of the
+#' \code{\link{popgenreport}} function. It needs to be provided with a genind
+#' object with spatial coordinates, a friction map (raster) and a specification
+#' which type of genetic distance should be used.  Once all three type of input
+#' are provided with the necessary input, a landscape genetic analysis using
+#' least cost path analysis is computed (see Cushman et al. 2010, Landguth et
+#' al. 2010). Depending on the genetic distance meassurement this is done on a
+#' subpopulation basis (D, Gst.Hedrick, Gst.Nei=Fst) or on an individual basis
+#' (Kosman, Smouse).
+#' 
+#' Check the help pages of \code{\link{popgenreport}} how to include
+#' coordinates to a genind object. The coordinates need to be projected.
+#' Latlongs are not valid, because Euclidean distances are calcuated based on
+#' these coordinates. For an example how to convert latlongs into a projected
+#' format have a look at the vignette that comes with this package. The
+#' friction needs to be a raster and needs to be in the same projection as the
+#' genind object. Also the type of genetic distance to be used needs to be
+#' specified.
+#' 
+#' @param cats a \code{genind} object with spatial coordinates in the other
+#' slot
+#' @param fric.raster friction (resistance) raster, that specifies the
+#' landscape where the analysis should be computed on. If fric.raser is a stack
+#' a cost distances are calculated for each layer in the stack.
+#' @param gen.distance type of genetic distance that should be used. Depending
+#' on the genetic distance meassurement this is done on a subpopulation basis
+#' (D, Gst.Hedrick, Gst.Nei=Fst) or on an individual basis (Kosman, Smouse,
+#' propShared). propShared is the proportion of shared alleles between
+#' individuals.
+#' @param NN Number of neighbours used when calculating the cost distance
+#' (possible values 4,8 or 16). As the default is NULL a value has to be
+#' provided if pathtype is 'leastcost'. NN=8 is most commonly used as it avoids
+#' a directional bias, but be aware that linear structures may cause artefacts
+#' in the least-cost paths in the NN=8 case, therefore we strongly recommend to
+#' inspect the actual least-cost paths in the provided output.
+#' @param pathtype Type of cost distance to be calculated (based on function in
+#' the \code{\link{gdistance}} package. Available distances are 'leastcost',
+#' 'commute' or 'rSPDistance'. See functions in the gdistance package for
+#' futher explanations.
+#' @param plotpath switch if least cost paths should be plotted (works only if
+#' pathtype='leastcost'. Be aware this slows down the computation, but it is
+#' recommended to check least cost paths visually.
+#' @param theta value needed for rSPDistance function. see
+#' \code{\link{rSPDistance}} in package \code{gdistance}.
+#' @param mk.resistance switch to do the landscape genetic analysis based on
+#' resistance matrices, should be set to TRUE
+#' @param mapdotcolor see \code{\link{popgenreport}}
+#' @param mapdotsize see \code{\link{popgenreport}}
+#' @param mapdotalpha see\code{\link{popgenreport}}
+#' @param mapdottype see \code{\link{popgenreport}}
+#' @param mapzoom see \code{\link{popgenreport}}
+#' @param mk.custom switch to add a customised part to the landgenreport
+#' @param fname see \code{\link{popgenreport}}
+#' @param foldername see \code{\link{popgenreport}}
+#' @param path.pgr see \code{\link{popgenreport}}
+#' @param mk.Rcode see \code{\link{popgenreport}}
+#' @param mk.complete see \code{\link{popgenreport}}
+#' @param mk.pdf see \code{\link{popgenreport}}
+#' @return Four distance matrices are returned. Pairwise Euclidean distances
+#' between subpopulations/individuals, cost distances, path lengths and genetic
+#' distances. Also following the approach of Wassermann et al. 2010 a series of
+#' partial mantel tests are performed. A multiple regression analysis based on
+#' Wang 2013 and Legendre 1994 is returned.The actual least-cost paths can be
+#' found under paths
+#' @author Bernd Gruber (bernd.gruber@@canberra.edu.au)
+#' @seealso \code{\link{popgenreport}}, \code{\link{wassermann}},
+#' \code{\link{genleastcost}}, \code{\link{lgrMMRR}}
+#' @references Cushman, S., Wasserman, T., Landguth, E. and Shirk, A. (2013).
+#' Re-Evaluating Causal Modeling with Mantel Tests in Landscape Genetics.
+#' Diversity, 5(1), 51-72.
+#' 
+#' Landguth, E. L., Cushman, S. A., Schwartz, M. K., McKelvey, K. S., Murphy,
+#' M. and Luikart, G. (2010). Quantifying the lag time to detect barriers in
+#' landscape genetics. Molecular ecology, 4179-4191.
+#' 
+#' Wang,I 2013. Examining the full effects of landscape heterogeneity on
+#' spatial genetic variation: a multiple matrix regression approach for
+#' quantifying geographic and ecological isolation. Evolution: 67-12:
+#' 3403-3411.
+#' 
+#' Wasserman, T. N., Cushman, S. A., Schwartz, M. K. and Wallin, D. O. (2010).
+#' Spatial scaling and multi-model inference in landscape genetics: Martes
+#' americana in northern Idaho. Landscape Ecology, 25(10), 1601-1612.
+#' @examples
+#' 
+#' \dontrun{%
+#' lc<-landgenreport(cats=landgen, fric.raster=fric.raster, gen.distance="D", NN=4, mk.resistance=TRUE)
+#' names(lc$leastcost)
+#' }
+#' @export
+#' @importFrom vegan mantel.partial permustats 
+#' @importFrom gdistance transition geoCorrection shortestPath costDistance commuteDistance rSPDistance 
+#' @importFrom sp SpatialLinesLengths Line Lines SpatialLines SpatialPolygons Polygons Polygon coordinates 
+
 landgenreport <- function(cats,
                           fric.raster,  #friction matrix   
                           gen.distance = "Gst.Nei",  #Gst Hedrick, Gst_Nei, smouse, kosman, D, %allels shared 
@@ -25,8 +121,7 @@ landgenreport <- function(cats,
                           mk.complete=FALSE,    # create a full report)  
                           mk.pdf=TRUE)
 {
-  if (class(cats)!="genind") {cat("You did not provide a valid catsnd object! Script stopped!\n"); return;}
-  
+  if (class(cats)!="genind") {stop("You did not provide a valid catsnd object! Script stopped!\n")}
   # Check for combinations of populations and loci with low numbers of individuals and alleles  
   npops<-length(levels(cats@pop))
   nloci<-length(locNames(cats))
@@ -50,36 +145,35 @@ landgenreport <- function(cats,
   }
   
   
-  #cut down length of loci names to  6  and make sure they are unique
-  locNames(cats) <- substr(locNames(cats),1,6)   
-  if (length(unique(locNames(cats)))!= length(locNames(cats))) 
-    {
-    locNames(cats) <- paste(1:length(locNames(cats)),"-",substr(locNames(cats),1,4), sep="")
- 
-  cat("Loci names were not unique and therefore adjusted.\n")
-    }
-  levels(cats@loc.fac) <- locNames(cats)  #make sure levels and factors are the same
-#check if indnames are unique!!!!
-#adjust if necessary and issue a notification
-if (length(unique(indNames(cats)))!=length(indNames(cats))) 
-  {indNames(cats) <- paste(1:length(indNames(cats)),"-",substr(indNames(cats),1,8),sep="")
-  cat("Individual names were not unique and therefore adjusted.\n")
-  }
+#   #cut down length of loci names to  6  and make sure they are unique
+#   #locNames(cats) <- substr(locNames(cats),1,6)   
+#   # if (length(unique(locNames(cats)))!= length(locNames(cats))) 
+#   #   {
+#   #   locNames(cats) <- paste(1:length(locNames(cats)),"-",substr(locNames(cats),1,4), sep="")
+#   # 
+#   # cat("Loci names were not unique and therefore adjusted.\n")
+#   #   }
+#   # levels(cats@loc.fac) <- locNames(cats)  #make sure levels and factors are the same
+# #check if indnames are unique!!!!
+# #adjust if necessary and issue a notification
+# if (length(unique(indNames(cats)))!=length(indNames(cats))) 
+#   {indNames(cats) <- paste(1:length(indNames(cats)),"-",substr(indNames(cats),1,8),sep="")
+#   cat("Individual names were not unique and therefore adjusted.\n")
+#   }
+# 
+# 
+# #check if pop.names are unique!!!!
+# #adjust if necessary and issue a notification  
+# if (length(unique(popNames(cats)))!=length(popNames(cats))) 
+#   {
+#   popNames(cats) <- paste(1:length(popNames(cats)),"-",substr(popNames(cats),1,6),sep="")
+#   cat("Subpopulation names were not unique and therefore adjusted.\n")
+#   }
 
 
-#check if pop.names are unique!!!!
-#adjust if necessary and issue a notification  
-if (length(unique(popNames(cats)))!=length(popNames(cats))) 
-  {
-  popNames(cats) <- paste(1:length(popNames(cats)),"-",substr(popNames(cats),1,6),sep="")
-  cat("Subpopulation names were not unique and therefore adjusted.\n")
-  }
-
-
-if (is.null(NN) & pathtype=="leastcost") 
+if (is.null(NN)) 
 {
-  cat("NN is not specified!\nPlease specify the number of nearest neighbour to use for the least-cost path calculations (NN=4 or NN=8). If linear features are tested you may want to consider NN=4 otherwise NN=8 is the most commonly used and prefered option. In any case check the actual least-cost paths for artefacts by inspecting the plot on least-cost paths.\n")
-  return()
+  stop("NN is not specified!\nPlease specify the number of nearest neighbour to use for the least-cost path calculations (NN=4 or NN=8). If linear features are tested you may want to consider NN=4 otherwise NN=8 is the most commonly used and prefered option. In any case check the actual least-cost paths for artefacts by inspecting the plot on least-cost paths.\n")
 }
 
 
@@ -150,7 +244,7 @@ path <- NULL
   }
   
 }
-if (is.null(path)) {cat("Could not find snw files in the PopGenReport library folder. Please check if the package is installed correctly [e.g.  installed.packages() ]. \n"); return;}
+if (is.null(path)) {stop("Could not find snw files in the PopGenReport library folder. Please check if the package is installed correctly [e.g.  installed.packages() ]. \n")}
   #for testing:
   #path <- "d:\\bernd\\R\\popgenreport\\inst\\swchunks\\"
   #path<- "C:\\Aaron files\\popgenreport098\\PopGenReport_0.98\\PopGenReport\\swchunks\\"

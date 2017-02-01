@@ -1,9 +1,40 @@
+#' Counts and visualises allele frequencies across loci and subpopulations
+#' 
+#' Counts the number of observations for each combination of allele variant and
+#' subpopulation for each locus. Calculates relative allele proportions for
+#' each subpopulations and then produces a heatmap using that data.
+#' 
+#' 
+#' @param population this is the \code{\link{genind}} object the analysis will
+#' be based on
+#' @param mk.figures if set to FALSE no figures are plotted. Default is TRUE.
+#' @return Produces heatmaps of the relative allele frequencies for each
+#' subpopulation at each locus and returns a list containing the counts (count)
+#' for each combination of allele and subpopulation and the relative
+#' frequencies of alleles by subpopulation (frequency) for each locus. The
+#' color bars on the heatmaps shows the relative frequency of an allele within
+#' a subpopulation for a locus while the histogram gives an overall count for
+#' the number of combinations of allele and subpopulation with a relative
+#' frequency.
+#' @author Aaron Adamack, aaron.adamack@@canberra.edu.au
+#' @seealso \code{\link{popgenreport}}
+#' @examples
+#' 
+#' # data(bilby)
+#'  #here we use only the first 50 individuals to speep up the example
+#' # popgenreport(bilby, mk.allele.dist=TRUE, mk.pdf=FALSE)
+#'  
+#' #to get a pdf output you need to have a running Latex version installed on your system.
+#' #popgenreport(bilby, mk.allele.dist=TRUE, mk.pdf=TRUE)
+#' @export
+#' @importFrom calibrate textxy
+#' @importFrom pegas as.loci Fst hw.test
+
 allele.dist<-function(population, mk.figures=TRUE){
   # package require adegenet and pegas
   if (class(population) != "genind") {
-    message("You did not provide a valid genind object! Script stopped!")
-    return
-  }
+    stop("You did not provide a valid genind object! Script stopped!")
+   }
 
   # initial steps...
   numloci<-length(locNames(population))  # this gets the total number of loci across all pops
@@ -18,10 +49,10 @@ allele.dist<-function(population, mk.figures=TRUE){
   for(i in 1:numloci){
     alleletable[[i]]<-matrix(nrow=popnumallele[[i]],ncol=numpops)
     colnames(alleletable[[i]])<-popNames(population)
-    rownames(alleletable[[i]])<-population@all.names[[i]]
+    rownames(alleletable[[i]])<-population@all.names[[i]][order(population@all.names[[i]])]
     fralleletable[[i]]<-matrix(nrow=popnumallele[[i]],ncol=numpops)
     colnames(fralleletable[[i]])<-popNames(population)
-    rownames(fralleletable[[i]])<-population@all.names[[i]]
+    rownames(fralleletable[[i]])<-population@all.names[[i]][order(population@all.names[[i]])]
   }
 
   # this is going to loop over all populations

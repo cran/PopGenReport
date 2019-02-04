@@ -57,14 +57,13 @@ to be written
 }
 \examples{
 
-\dontrun{\%
+\donttest{
+library(raster)
+fric.raster <- readRDS(system.file("extdata","fric.raster.rdata", package="PopGenReport"))
 glc <- genleastcost(cats=landgen, fric.raster, "D", NN=8)
 wassermann(eucl.mat = glc$eucl.mat, cost.mat = glc$cost.mats, gen.mat = glc$gen.mat)
 lgrMMRR(gen.mat = glc$gen.mat, cost.mats = glc$cost.mats, eucl.mat = glc$eucl.mat)
 }
-}
-\author{
-Bernd Gruber
 }
 \references{
 Cushman, S., Wasserman, T., Landguth, E. and Shirk, A. (2013).
@@ -83,4 +82,6 @@ americana in northern Idaho. Landscape Ecology, 25(10), 1601-1612.
 \code{\link{landgenreport}}, \code{\link{popgenreport}},
 \code{\link{wassermann}}, \code{\link{lgrMMRR}}
 }
-
+\author{
+Bernd Gruber
+}

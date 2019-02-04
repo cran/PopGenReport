@@ -37,17 +37,13 @@ outlined in Legendre et al. 1994 and implemented by Wang 2013.
 }
 \examples{
 
-\dontrun{\%
-require(raster)
+\donttest{
 data(landgen)
-data(fric.raster)
+library(raster)
+fric.raster <- readRDS(system.file("extdata","fric.raster.rdata", package="PopGenReport"))
 glc <- genleastcost(landgen, fric.raster, "D", NN=4, path="leastcost")
 lgrMMRR(glc$gen.mat, glc$cost.mats, glc$eucl.mat, nperm=999)
 }
-}
-\author{
-Bernd Gruber (bernd.gruber@canberra.edu.au) using the
-implementation of Wang 2013.
 }
 \references{
 Legendre, P.; Lapointe, F. and Casgrain, P. 1994. Modeling brain
@@ -67,4 +63,7 @@ quantifying geographic and ecological isolation. Evolution: 67-12:
 \code{\link{genleastcost}}, \code{\link{landgenreport}},
 \code{\link{wassermann}}
 }
-
+\author{
+Bernd Gruber (bernd.gruber@canberra.edu.au) using the
+implementation of Wang 2013.
+}

@@ -6,8 +6,9 @@
 required for popgenreport)}
 \usage{
 read.genetable(filename, pop = NULL, ind = NULL, lat = NULL,
-  long = NULL, x = NULL, y = NULL, other.min = NULL, other.max = NULL,
-  oneColPerAll, NA.char = NA, sep = NULL, ncode = NULL, ploidy = 2)
+  long = NULL, x = NULL, y = NULL, other.min = NULL,
+  other.max = NULL, oneColPerAll, NA.char = NA, sep = NULL,
+  ncode = NULL, ploidy = 2)
 }
 \arguments{
 \item{filename}{the name of your file in .csv file format}
@@ -114,12 +115,11 @@ platy2c <- read.genetable( paste(.libPaths()[1],"/PopGenReport/extdata/platypus2
 #run a report (with a map)
 #res<- popgenreport(platy2c, mk.counts=TRUE, mk.map=TRUE, mk.allele.dist=TRUE, mk.pdf=TRUE)
 }
-\author{
-Bernd Gruber (bernd.gruber@canberra.edu.au)
-}
 \seealso{
 \code{\link{import2genind}}, \code{\link{df2genind}},
 \code{\link{read.fstat}}, \code{\link{read.structure}},
 \code{\link{read.genetix}} \code{\link{read.genepop}}
 }
-
+\author{
+Bernd Gruber (bernd.gruber@canberra.edu.au)
+}

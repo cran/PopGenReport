@@ -4,7 +4,8 @@
 \alias{wassermann}
 \title{Partial Mantel tests on costdistance matrices}
 \usage{
-wassermann(gen.mat, cost.mats, eucl.mat = NULL, plot = TRUE, nperm = 999)
+wassermann(gen.mat, cost.mats, eucl.mat = NULL, plot = TRUE,
+  nperm = 999)
 }
 \arguments{
 \item{gen.mat}{pairwise genetic distance matrix}
@@ -32,13 +33,12 @@ see \code{\link{landgenreport}}
 }
 \examples{
 
-\dontrun{\%
+\donttest{
+library(raster)
+fric.raster <- readRDS(system.file("extdata","fric.raster.rdata", package="PopGenReport"))
 glc <- genleastcost(landgen, fric.raster, "D", NN=8)
 wassermann(eucl.mat = glc$eucl.mat, cost.mats = glc$cost.mats, gen.mat = glc$gen.mat)
 }
-}
-\author{
-Bernd Gruber (bernd.gruber@canberra.edu.au)
 }
 \references{
 Wassermann, T.N., Cushman, S. A., Schwartz, M. K. and Wallin, D.
@@ -49,4 +49,6 @@ Martes americana in northern Idaho. Landscape Ecology, 25(10), 1601-1612.
 \code{\link{popgenreport}}, \code{\link{genleastcost}},
 \code{\link{landgenreport}}, \code{\link{lgrMMRR}}
 }
-
+\author{
+Bernd Gruber (bernd.gruber@canberra.edu.au)
+}

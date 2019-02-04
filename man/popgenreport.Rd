@@ -11,13 +11,13 @@ results, which can be used for further analyses.}
 \usage{
 popgenreport(cats = NULL, mk.counts = TRUE, mk.map = FALSE,
   maptype = "satellite", mapdotcolor = "blue", mapdotsize = 1,
-  mapdotalpha = 0.4, mapdottype = 19, mapzoom = NULL, mk.locihz = FALSE,
-  mk.hwe = FALSE, mk.fst = FALSE, mk.gd.smouse = FALSE,
-  mk.gd.kosman = FALSE, mk.pcoa = FALSE, mk.spautocor = FALSE,
-  mk.allele.dist = FALSE, mk.null.all = FALSE, mk.allel.rich = FALSE,
-  mk.differ.stats = FALSE, mk.custom = FALSE, fname = "PopGenReport",
-  foldername = "results", path.pgr = NULL, mk.Rcode = FALSE,
-  mk.complete = FALSE, mk.pdf = TRUE)
+  mapdotalpha = 0.4, mapdottype = 19, mapzoom = NULL,
+  mk.locihz = FALSE, mk.hwe = FALSE, mk.fst = FALSE,
+  mk.gd.smouse = FALSE, mk.gd.kosman = FALSE, mk.pcoa = FALSE,
+  mk.spautocor = FALSE, mk.allele.dist = FALSE, mk.null.all = FALSE,
+  mk.allel.rich = FALSE, mk.differ.stats = FALSE, mk.custom = FALSE,
+  fname = "PopGenReport", foldername = "results", path.pgr = NULL,
+  mk.Rcode = FALSE, mk.complete = FALSE, mk.pdf = TRUE)
 }
 \arguments{
 \item{cats}{this is the \code{\link{genind}} object the analysis will be
@@ -196,10 +196,6 @@ for a dataset with ~3200 individuals.
 # for a full report in a single pdf set mk.complete to TRUE
 # res <- popgenreport(bilby, mk.complete=TRUE)
 }
-\author{
-Aaron Adamack & Bernd Gruber, aaron.adamack@canberra.edu.au,
-bernd.gruber@canberra.edu.au
-}
 \references{
 Kosman E., Leonard K.J. 2005. Similarity coefficients for
 molecular markers in studies of genetic relationships between individuals
@@ -214,4 +210,7 @@ Bioinformatics 28:2537-2539
 \seealso{
 \code{\link{adegenet}}, \code{\link{pegas}}, \code{\link{mmod}}
 }
-
+\author{
+Aaron Adamack & Bernd Gruber, aaron.adamack@canberra.edu.au,
+bernd.gruber@canberra.edu.au
+}

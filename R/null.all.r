@@ -47,20 +47,21 @@
 #' 55:391-401
 #' @examples
 #' 
-#'  #not run:
-#'  #data(bilby)
+#'  \dontrun{
+#'  data(bilby)
 #'  #here we use only the first 50 individuals to speep up the example
-#'  #popgenreport(bilby, mk.null.all=TRUE, mk.pdf=FALSE)
+#'  popgenreport(bilby, mk.null.all=TRUE, mk.pdf=FALSE)
 #'  
 #' #to get a pdf output you need to have a running Latex version installed on your system.
 #' #popgenreport(bilby, mk.null.all=TRUE, mk.pdf=TRUE)
+#' }
 #' @importFrom plyr alply
 #' @importFrom reshape melt
 #' @export
 null.all<-function(population)
 {
   # Confirm that the function has been provided with a genind object
-  if (class(population) != "genind"){
+  if (!is(population,"genind")){
     stop("You did not provide a valid genind object! Script stopped!")
 
   }

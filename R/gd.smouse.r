@@ -33,15 +33,16 @@
 #' 561-573.
 #' @examples
 #' 
-#' #not run:
-#' #data(bilby)
-#' #popgenreport(bilby, mk.gd.smouse = TRUE, mk.pdf=FALSE)
+#' \dontrun{
+#' data(bilby)
+#' popgenreport(bilby, mk.gd.smouse = TRUE, mk.pdf=FALSE)
 #' #to get a pdf output you need to have a running Latex version installed on your system.
 #' #popgenreport(bilby, mk.gd.smouse = TRUE, mk.pdf=TRUE)
+#' }
 #' @export
 gd.smouse <- function(population, verbose=TRUE){
   # check to see if the passed data is of the right type
-  if (class(population) != "genind") {
+  if (!is(population,"genind")) {
     stop("You did not provide a valid genind object! Script stopped!")
   }
   
